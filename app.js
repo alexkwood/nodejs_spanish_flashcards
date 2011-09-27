@@ -5,10 +5,12 @@ require.paths.unshift('/opt/node_libraries');
 
 var express = require('express'),
     app = module.exports = express.createServer(),
-    events = require('events'),
-    sys = require('sys'),
-    mongodb = require("mongodb"),
-    Flashcard = require('./flashcard.js').Flashcard
+    // events = require('events'),
+    // sys = require('sys'),
+    util = require('util'),
+    // mongodb = require("mongodb"), // not needed w/Mongoose?
+    mongoose = require('mongoose')  //,
+    // Flashcard = require('./flashcard.js').Flashcard
     ;
 
 // custom event handler
@@ -60,13 +62,72 @@ app.get('/', function(req, res){
   });
 });
 
+
 app.get('/add', function(req, res) {
+  // console.log('get', req);
+  
   res.render('add', {
     locals: {
-      pageTitle : 'Add a Word'
+      pageTitle : 'Add a Word',
+      reqDump: util.inspect(req)
     }
   });
 });
+
+app.post('/add', function(req, res) {
+  console.log('post body:', req.body);
+  
+  res.render('add', {
+    locals: {
+      pageTitle : 'Add a Word',
+      reqDump: util.inspect(req)
+    }
+  });
+});
+
+
+
+// test mongo
+app.get('/mongo', function(req, res) {
+  
+  var db = mongoose.connect({
+    host: 'localhost',
+    database: 'flashcards',
+    port: 27017,
+    options: {}
+  });
+  
+  var Schema = mongoose.Schema, 
+      ObjectId = Schema.ObjectId  // neces?
+      ;
+
+  var FlashcardSchema = new Schema({
+      word_es   : String
+    , word_en   : String
+    , type      : { type: String }    // special case
+    , created   : Date
+  });
+  
+  var FlashcardModel = new mongoose.model('Flashcard', FlashcardSchema);
+  
+  var card = new FlashcardModel();
+  card.my.word_es = 'esta noche';
+  card.my.word_en = 'tonight';
+  card.my.type = 'n';
+  // card.my.created = new SchemaDate();    // ???
+  card.save(function(err){
+    res.write("ERROR!!!\n");
+    res.write(util.inspect(err));
+  });
+  
+  
+  // old fashioned output
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.write('test\n');
+  res.write('Hello World\n');
+  res.end();  
+});
+
 
 
 

@@ -1,6 +1,12 @@
-!!!
+!!! 5
 html
   head
-    title= title
+    title= app.appTitle
     link(rel='stylesheet', href='/stylesheets/style.css')
-  body!= body
+
+  body
+    h1= app.appTitle
+    h2= pageTitle
+    
+    != body
+  

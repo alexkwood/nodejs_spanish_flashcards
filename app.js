@@ -6,12 +6,25 @@ require.paths.unshift('/opt/node_libraries');
 var express = require('express'),
     app = module.exports = express.createServer(),
     // events = require('events'),
-    // sys = require('sys'),
+    sys = require('sys'),
     util = require('util'),
-    // mongodb = require("mongodb"), // not needed w/Mongoose?
-    mongoose = require('mongoose')  //,
-    // Flashcard = require('./flashcard.js').Flashcard
+    fs = require('fs'), //?
+    //mongodb = require("mongodb"), // not needed w/Mongoose?   moved to controller
+    // mongoose = require('mongoose'),
+    flashcards = require('./controllers/flashcard-mongodb.js').FlashcardHandler,
+    forms = require('forms'),
+    parse = require('url').parse,
+    fields = forms.fields,
+    validators = forms.validators,
+    _ = require('underscore')._   //,
+    // wordModel = require('./models/word')
     ;
+
+// [quasi] models
+require('./models/word');
+
+// why is this necessary?
+var flashcardHandler = new FlashcardHandler();
 
 // custom event handler
 // var eventEmitter = new events.EventEmitter;
@@ -20,25 +33,25 @@ var express = require('express'),
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.use(express.bodyParser());
+  // app.use(express.bodyParser());   // THIS BREAKS FORMS MODULE! (TURN OFF FOR STANDARD FORM HANDLING)
   app.use(express.methodOverride());
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
-
-  // global vars -- doesn't work, crashes w/ memory allocation error
-  // app.set('view options', g);
 });
 
 
 // global vars -- is there a simpler way to do this?
 app.appTitle = 'Ben\'s Spanish Flashcards';
-// app.dynamicHelpers({
+app.dynamicHelpers({
 //   appTitle: function(req,res) { return app.appTitle; }
 //   , title: function(req,res) {
 //       // console.log(res);
 //       return 'title: ' + app.appTitle;
 //     }
-// });
+  addWordForm: function(req, res) {
+    return 'some text';
+  }
+});
 
 
 app.configure('development', function(){
@@ -63,72 +76,117 @@ app.get('/', function(req, res){
 });
 
 
+// handle the Add Word form, as a GET (initial) or POST (submitted) request.
+// @todo merge this into the handler/model file ... would be great to have unified model/form generator!
+app.addWordForm = {
+  
+  // no way to set default values?
+  // from issue q -- 'Just pass your data object into form.bind()' (@todo)
+  form : forms.create({
+    word_es: fields.string({ label: 'Spanish', required: true }),
+    word_en: fields.string({ label: 'English', required: true }),
+    type: fields.string({ label: 'Type' //, widget: 'select', 
+      // choices: {
+      //   '': '',
+      //   'n': 'noun',
+      //   'v': 'verb',
+      //   'adv': 'adverb',
+      //   'pro': 'pronoun',
+      // }
+    })
+  }),
+  
+  render : function(req, res, locals) {
+    locals = _.extend({
+        success: false,
+        pageTitle: 'Add a Word',
+        form: app.addWordForm.form.toHTML(),
+        results: null
+      },
+      locals    // overrides
+    );
+  
+    // clear the form on successful submit, to add another
+    if (locals.success) {
+      app.addWordForm.form.bind({});
+      locals.form = app.addWordForm.form.toHTML();    // re-render
+    }
+  
+    res.render('add', {
+      locals: locals
+    });
+  }  //render
+  
+};
+
+
+// form page loaded (not submitted)
 app.get('/add', function(req, res) {
-  // console.log('get', req);
-  
-  res.render('add', {
-    locals: {
-      pageTitle : 'Add a Word',
-      reqDump: util.inspect(req)
-    }
-  });
+  app.addWordForm.render(req, res, {});
 });
 
+// form submitted
 app.post('/add', function(req, res) {
-  console.log('post body:', req.body);
-  
-  res.render('add', {
-    locals: {
-      pageTitle : 'Add a Word',
-      reqDump: util.inspect(req)
+  app.addWordForm.form.handle(req, {
+    
+    // form passed validation - save the word!
+    success: function(form) {
+      console.log('form data: ' + util.inspect(form.data) + '\n');
+
+      var word = new WordModel(form.data);
+      console.log('word:', word);
+      
+      flashcardHandler.addWord(word, function(error, results) {
+        if (error) {
+          // allow object or string
+          var errorStr = error;
+          if (! _.isString(errorStr)) errorStr = util.inspect(errorStr);
+          
+          errorStr = "Unable to save the word: " + errorStr;
+
+          app.prettyError(errorStr, req, res);    //END.
+        }
+        else {
+          // render page w/ results
+          app.addWordForm.render(req, res, { success:true, results: util.inspect(results) });
+        }
+      });
+      
+    },
+    
+    // did not pass validation, re-render
+    other: function(form) {
+      app.addWordForm.render(req, res, {});
     }
   });
 });
 
 
 
-// test mongo
-app.get('/mongo', function(req, res) {
-  
-  var db = mongoose.connect({
-    host: 'localhost',
-    database: 'flashcards',
-    port: 27017,
-    options: {}
+app.get('/list', function(req, res) {
+  flashcardHandler.findAll('words', function(error, docs) {
+    if (error) app.prettyError(error, req, res);
+    else {
+      res.render('list', {
+        'words': docs
+      });
+    }
   });
-  
-  var Schema = mongoose.Schema, 
-      ObjectId = Schema.ObjectId  // neces?
-      ;
-
-  var FlashcardSchema = new Schema({
-      word_es   : String
-    , word_en   : String
-    , type      : { type: String }    // special case
-    , created   : Date
-  });
-  
-  var FlashcardModel = new mongoose.model('Flashcard', FlashcardSchema);
-  
-  var card = new FlashcardModel();
-  card.my.word_es = 'esta noche';
-  card.my.word_en = 'tonight';
-  card.my.type = 'n';
-  // card.my.created = new SchemaDate();    // ???
-  card.save(function(err){
-    res.write("ERROR!!!\n");
-    res.write(util.inspect(err));
-  });
-  
-  
-  // old fashioned output
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.write('test\n');
-  res.write('Hello World\n');
-  res.end();  
 });
 
 
+// @todo find a more express-y way to do this.
+app.prettyError = function(error, req, res) {
+  res.render('error', {
+    pageTitle: 'An error occurred',
+    error: error      // (assume string)
+  });
+}
+
+// test error
+app.get('/error', function(req, res){
+  app.prettyError({'msg':'A fake error'}, req, res);
+});
 
 
 app.listen(3000);

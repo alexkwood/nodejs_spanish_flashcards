@@ -1,24 +1,10 @@
 
+- if (success)
+  div.success Word added!
+  != results
+  
+  h3 Add another word
+
 form#add-word(method='post', action='/add')
-  div
-    label Spanish
-    input(type='text', name='word-es')
-  div
-    label English
-    input(type='text', name='word-en')
-  
-  //- is there a form API equivalent for node?
-  div
-    label Type
-    select(name='type')
-      option(value='') -
-      option(value='v') Verb
-      option(value='n') Noun
-      option(value='adv') Adverb
-      option(value='pro') Pronoun
-  
-  input(type='submit')
-
-
-div#debug
-  =! reqDump
+  != form
+  input(type='submit', value='Add Word')

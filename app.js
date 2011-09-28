@@ -1,8 +1,5 @@
 // Spanish Flashcards app -- learning node.js & express.js with mongodb
 
-// how to make this global?
-require.paths.unshift('/opt/node_libraries');
-
 var express = require('express'),
     app = module.exports = express.createServer(),
     // events = require('events'),

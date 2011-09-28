@@ -15,6 +15,7 @@ var express = require('express'),
     forms = require('forms'),
     parse = require('url').parse,
     fields = forms.fields,
+    widgets = forms.widgets,
     validators = forms.validators,
     _ = require('underscore')._   //,
     // wordModel = require('./models/word')
@@ -85,14 +86,16 @@ app.addWordForm = {
   form : forms.create({
     word_es: fields.string({ label: 'Spanish', required: true }),
     word_en: fields.string({ label: 'English', required: true }),
-    type: fields.string({ label: 'Type' //, widget: 'select', 
-      // choices: {
-      //   '': '',
-      //   'n': 'noun',
-      //   'v': 'verb',
-      //   'adv': 'adverb',
-      //   'pro': 'pronoun',
-      // }
+    type: fields.string({ 
+      label: 'Type', 
+      widget: widgets.select(),
+      choices: {
+        '': '',
+        'n': 'noun',
+        'v': 'verb',
+        'adv': 'adverb',
+        'pro': 'pronoun',
+      }
     })
   }),
   
@@ -147,8 +150,13 @@ app.post('/add', function(req, res) {
           app.prettyError(errorStr, req, res);    //END.
         }
         else {
+          var newWord = _.toArray(results).pop();
+          
           // render page w/ results
-          app.addWordForm.render(req, res, { success:true, results: util.inspect(results) });
+          app.addWordForm.render(req, res, { 
+            success:true, 
+            results: newWord.word_es + ' / ' + newWord.word_en
+          });
         }
       });
       
@@ -174,8 +182,21 @@ app.get('/list', function(req, res) {
         pageTitle: 'List',
         words: docs
         // , debug: '<pre>' + util.inspect(req) + '</pre>'
+        // , debug: '<pre>' + util.inspect(docs) + '</pre>'
       });
     }
+  });
+});
+
+
+app.get('/delete/:id', function(req, res) {
+  var id = req.param('id');
+  flashcardHandler.remove('words', id, function(error, results) {
+    if (error) app.prettyError(error, req, res);
+    res.render('index', {
+      pageTitle: 'Delete',
+      debug: 'ID: ' + id + '<br/>' + util.inspect(results)
+    });
   });
 });
 

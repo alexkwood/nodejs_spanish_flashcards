@@ -85,5 +85,19 @@ FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
   });
 };
 
+FlashcardHandler.prototype.remove = function(collectionName, id, callback) {
+  var collection = this.getCollection(collectionName, function(error, collection) {
+    if (error) callback(error);
+    else {
+      // CAN'T GET THE ID RIGHT HERE, OR SOMETHING... @TODO
+      collection.remove({ _id: ObjectID.createFromHexString(id) }, function(error, result) {
+        if (error) callback(error);
+        
+        callback(null, result);
+      })
+    }
+  });
+};
+
 
 exports.FlashcardHandler = FlashcardHandler;

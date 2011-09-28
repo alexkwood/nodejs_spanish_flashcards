@@ -15,3 +15,5 @@
 * 'this' var in object gets lost/unbound as callbacks get deeper
 
 * forms plugin -- after submitted, want to show form again but EMPTY; shows submitted values. how to reset?
+
+* how to catch un-handled paths w/o crash?

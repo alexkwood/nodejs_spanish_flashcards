@@ -1,4 +1,16 @@
-ul#words
+ul.words
   - each word in words
-    //- li!= partial('user', user)
-    li word
+    //- -- NOT WORKING!? --
+    //-li!= partial('word', word)
+    
+    li.word
+      span.label spanish
+      span.es= word.word_es
+
+      span.label english      
+      span.en= word.word_en
+
+      span.label type
+      span.type= word.type
+
+    

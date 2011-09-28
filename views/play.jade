@@ -1,0 +1,15 @@
+//- play a random flashcard
+
+div#play
+
+  div.question
+    span.label= lang
+    = question
+  
+  div#answer
+    ul.words
+      li!= partial('word', word)
+    
+  a#show(href='#') Show
+
+a#next(href='/play') Next &raquo;

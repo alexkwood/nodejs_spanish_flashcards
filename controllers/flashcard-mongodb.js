@@ -58,4 +58,32 @@ FlashcardHandler.prototype.addWord = function(word, callback) {
   });
 };
 
+
+FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
+  var collection = this.getCollection(collectionName, function(error, collection) {
+    if (error) callback(error);
+    else {
+      collection.count(function(error, count) {
+        if (error) callback(error);
+        
+        // skip a random number of records
+        var skip = Math.floor( Math.random() * count );
+        
+        collection.find({}, { limit: 1, skip: skip }, function(error, cursor){
+          if (error) callback(error);
+          
+          cursor.nextObject( function(error, doc){
+            if (error) callback(error);
+            
+            console.log('doc:', doc);
+            
+            callback(null, doc);
+          });
+        });
+      });
+    }
+  });
+};
+
+
 exports.FlashcardHandler = FlashcardHandler;

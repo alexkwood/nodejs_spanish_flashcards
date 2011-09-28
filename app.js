@@ -70,7 +70,7 @@ app.get('/', function(req, res){
   res.render('home', {
     // layout: 'alternate.jade',
     locals: {
-      pageTitle : 'Home'
+      pageTitle : ''
     }
   });
 });
@@ -164,14 +164,58 @@ app.post('/add', function(req, res) {
 
 
 app.get('/list', function(req, res) {
+  app.use(express.bodyParser());
+  // -- makes req.query available for qstr vars --
+  
   flashcardHandler.findAll('words', function(error, docs) {
     if (error) app.prettyError(error, req, res);
     else {
       res.render('list', {
-        'words': docs
+        pageTitle: 'List',
+        words: docs
+        // , debug: '<pre>' + util.inspect(req) + '</pre>'
       });
     }
   });
+});
+
+
+app.get('/play', function(req, res) {
+  app.use(express.bodyParser());
+  
+  //@todo separate this to its own controller
+  var debug = '';
+  
+  // show which language
+  var langs = ['es','en'];
+  var lang = langs[ Math.floor( Math.random() * _.size(langs) ) ];
+  
+  // get a random word...
+  
+  flashcardHandler.getRandom('words', function(error, results) {
+    if (error) {
+      app.prettyError(util.inspect(error), req, res);    //END.
+    }
+    else {
+      debug += util.inspect(results) + '<br/>';
+      var word = new WordModel(results);
+
+      debug += util.inspect(word) + '<br/>';
+      
+      // render page w/ results
+      res.render('play', {
+        pageTitle: 'Play',
+        word: word,
+        lang: lang,
+        question: word['word_' + lang],
+        extraScripts: [
+          '/javascripts/play.js'
+        ]
+        // , debug: debug
+      });
+    }
+  });
+  
 });
 
 

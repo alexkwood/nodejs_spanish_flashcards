@@ -1,0 +1,122 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.clearlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+
+form#add-word {
+  * {
+    font-size: 1.2em;
+  }
+  
+  div.field {
+    float: left;
+    clear: both;
+    margin-bottom: 1em;
+  }
+  label {
+    float: left;
+    width: 100px;
+  }
+  
+  input.submit {
+    float: left;
+    clear: both;
+  }
+}
+
+
+ul#nav {
+  .clearlist;
+  margin: 0 0 1em 0;
+  
+  float: left;
+  width: 100%;
+  clear: both;
+  
+  li {
+    float: left;
+    margin-right: 10px;
+  }
+}
+
+
+ul.words {
+  .clearlist;
+  
+  li.word {
+    margin-bottom: 1em;
+    float: left;
+    clear: both;
+    
+    span {
+      margin: 0 20px 0 0;
+      width: 80px;
+      display: block;
+      float: left;
+    }
+    
+    span.label {
+      color: #999;
+      margin: 0 5px 0 0;
+      width: auto;
+    }
+  }
+}
+
+
+#play {
+  margin-bottom: 3em;
+
+  .question {
+    font-size: 3em;
+    
+    span.label {
+      color: #999;
+      margin: 0 1em 0 0;
+      width: auto;
+    }
+  }
+  
+  #answer {
+    display: none;
+    
+    font-size: 2em;
+    margin-top: 1em;
+    
+    ul.words, li.word {
+      width: 100%;
+      clear: both;
+    }
+    
+    span {
+      width: auto;
+      white-space: nowrap;
+    }
+    span.label {
+      width: 5em;
+      clear: left;
+    }
+    
+  }
+  
+  a#show {
+    display: block;
+    margin-top: 1em;
+    font-size: 2em;
+  }
+}
+
+a#next {
+  font-size: 1.5em;
+}

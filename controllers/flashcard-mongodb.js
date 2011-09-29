@@ -44,20 +44,67 @@ FlashcardHandler.prototype.findAll = function(collectionName, callback) {
     });
 };
 
-// 'word' is a modeled object
+// doc should be a modeled object
 // callback() takes (error, results)
-FlashcardHandler.prototype.addWord = function(word, callback) {
-  var collection = this.getCollection('words', function(error, collection) {
+FlashcardHandler.prototype.save = function(collectionName, doc, callback) {
+  var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
     else {
-      collection.insert(word, function(error, docs) {
-        if (error) callback(error);
-        else callback(null, docs);
+      
+      // set max ID + 1
+      // (count() isn't enough b/c deleting records causes dups)
+      collection.count(function(error, count) {
+        if (! error) {
+          doc._id = count+1;
+          console.log('set id: ' + doc._id + '\n');
+        }   // otherwise leave default ObjectID        
+
+        collection.insert(doc, function(error, docs) {
+          if (error) callback(error);
+          else callback(null, docs);
+        });        
       });
     }
   });
 };
 
+
+// ATTEMPT TO USE SEQUENTIAL IDS, CAN'T GET IT TO WORK. GOING BACK TO HASH ID'S.
+// get max _id + 1
+// (count() isn't enough b/c deleting records causes dups)
+/*FlashcardHandler.prototype.getNextId = function(collectionName, callback) {
+  var collection = this.getCollection(collectionName, function(error, collection) {
+    if (error) callback(error);
+    else {
+      collection.mapReduce(
+        function map() {
+          // console.log('map: ', this);
+          emit(this._id);
+        },
+        function reduce (key, values) {
+          // console.log('reduce: ', key, values);
+          // console.log('reduced to:', reduced);
+          return Math.max.apply(Math, values);
+        },
+        { 
+          out: collectionName + '_ids',
+          keeptemp: false,    // might as well make it permanent
+          finalize: function fin(key, value) {
+            // console.log('fin: ', key, value);
+            return db.oplan.findOne({id:key, num:value});   // what is oplan??
+          }  //,
+          // limit: 1,
+        }, 
+        function(error, docs) {
+          // console.log('reduce: ', docs);
+          if (error) callback(error);
+          else callback(null, docs);
+        }
+      );
+    }
+  });
+};
+*/
 
 FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
@@ -89,12 +136,11 @@ FlashcardHandler.prototype.remove = function(collectionName, id, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
     else {
-      // CAN'T GET THE ID RIGHT HERE, OR SOMETHING... @TODO
-      collection.remove({ _id: ObjectID.createFromHexString(id) }, function(error, result) {
+      collection.remove({ _id: id }, function(error, result) {
         if (error) callback(error);
         
         callback(null, result);
-      })
+      });
     }
   });
 };

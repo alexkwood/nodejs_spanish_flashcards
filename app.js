@@ -136,7 +136,7 @@ app.post('/add', function(req, res) {
       var word = new WordModel(form.data);
       console.log('word:', word);
       
-      flashcardHandler.addWord(word, function(error, results) {
+      flashcardHandler.save('words', word, function(error, results) {
         if (error) {
           // allow object or string
           var errorStr = error;

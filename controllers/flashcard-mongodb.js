@@ -50,19 +50,9 @@ FlashcardHandler.prototype.save = function(collectionName, doc, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
     else {
-      
-      // set max ID + 1
-      // (count() isn't enough b/c deleting records causes dups)
-      collection.count(function(error, count) {
-        if (! error) {
-          doc._id = count+1;
-          console.log('set id: ' + doc._id + '\n');
-        }   // otherwise leave default ObjectID        
-
-        collection.insert(doc, function(error, docs) {
-          if (error) callback(error);
-          else callback(null, docs);
-        });        
+      collection.insert(doc, function(error, docs) {
+        if (error) callback(error);
+        else callback(null, docs);
       });
     }
   });

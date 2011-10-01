@@ -6,22 +6,27 @@ var express = require('express'),
     sys = require('sys'),
     util = require('util'),
     fs = require('fs'), //?
-    //mongodb = require("mongodb"), // not needed w/Mongoose?   moved to controller
-    // mongoose = require('mongoose'),
-    flashcards = require('./controllers/flashcard-mongodb.js').FlashcardHandler,
-    forms = require('forms'),
     parse = require('url').parse,
-    fields = forms.fields,
+    forms = require('forms'),
+    fields = forms.fields,    // all needed here?
     widgets = forms.widgets,
     validators = forms.validators,
     _ = require('underscore')._   //,
     // wordModel = require('./models/word')
     ;
 
+// db handler [generic]
+require('./controllers/flashcard-mongodb.js');
+
 // [quasi] models
 require('./models/word');
 
-// why is this necessary?
+// global vars -- [is this bad form?]
+global.dbName = 'flashcards';
+global.wordsCollection = 'words';
+
+
+// instantiate a db/model handler
 var flashcardHandler = new FlashcardHandler();
 
 // custom event handler
@@ -74,69 +79,31 @@ app.get('/', function(req, res){
 });
 
 
-// handle the Add Word form, as a GET (initial) or POST (submitted) request.
-// @todo merge this into the handler/model file ... would be great to have unified model/form generator!
-app.addWordForm = {
-  
-  // no way to set default values?
-  // from issue q -- 'Just pass your data object into form.bind()' (@todo)
-  form : forms.create({
-    word_es: fields.string({ label: 'Spanish', required: true }),
-    word_en: fields.string({ label: 'English', required: true }),
-    type: fields.string({ 
-      label: 'Type', 
-      widget: widgets.select(),
-      choices: {
-        '': '',
-        'n': 'noun',
-        'v': 'verb',
-        'adv': 'adverb',
-        'pro': 'pronoun',
-      }
-    })
-  }),
-  
-  render : function(req, res, locals) {
-    locals = _.extend({
-        success: false,
-        pageTitle: 'Add a Word',
-        form: app.addWordForm.form.toHTML(),
-        results: null
-      },
-      locals    // overrides
-    );
-  
-    // clear the form on successful submit, to add another
-    if (locals.success) {
-      app.addWordForm.form.bind({});
-      locals.form = app.addWordForm.form.toHTML();    // re-render
-    }
-  
-    res.render('add', {
-      locals: locals
-    });
-  }  //render
-  
-};
 
 
 // form page loaded (not submitted)
 app.get('/add', function(req, res) {
-  app.addWordForm.render(req, res, {});
+  var wordForm = new WordForm();
+  wordForm.render(req, res, {});
 });
+
 
 // form submitted
 app.post('/add', function(req, res) {
-  app.addWordForm.form.handle(req, {
+  
+  var wordForm = new WordForm();
+
+  // @todo consolidate further
+  wordForm.form.handle(req, {
     
     // form passed validation - save the word!
     success: function(form) {
       console.log('form data: ' + util.inspect(form.data) + '\n');
 
       var word = new WordModel(form.data);
-      console.log('word:', word);
+      console.log('word to save:', word);
       
-      flashcardHandler.save('words', word, function(error, results) {
+      flashcardHandler.save(global.wordsCollection, word, function(error, results) {
         if (error) {
           // allow object or string
           var errorStr = error;
@@ -150,7 +117,8 @@ app.post('/add', function(req, res) {
           var newWord = _.toArray(results).pop();
           
           // render page w/ results
-          app.addWordForm.render(req, res, { 
+          wordForm.form.bind({});
+          wordForm.render(req, res, { 
             success:true, 
             results: newWord.word_es + ' / ' + newWord.word_en
           });
@@ -161,7 +129,7 @@ app.post('/add', function(req, res) {
     
     // did not pass validation, re-render
     other: function(form) {
-      app.addWordForm.render(req, res, {});
+      wordForm.render(req, res, {});
     }
   });
 });
@@ -172,7 +140,7 @@ app.get('/list', function(req, res) {
   app.use(express.bodyParser());
   // -- makes req.query available for qstr vars --
   
-  flashcardHandler.findAll('words', function(error, docs) {
+  flashcardHandler.findAll(global.wordsCollection, function(error, docs) {
     if (error) app.prettyError(error, req, res);
     else {
       res.render('list', {
@@ -186,9 +154,28 @@ app.get('/list', function(req, res) {
 });
 
 
+// (edit form goes to /add path w/ ID in form)
+app.get('/edit/:id', function(req, res) {
+  var id = req.param('id');
+  flashcardHandler.getById( global.wordsCollection, id, function(error, results) {
+    console.log('getById results: ', results);
+    
+    if (error) app.prettyError(error, req, res);
+    
+    var word = new WordModel(results);
+    console.log('modeled word to edit: ', word);
+    
+    var wordForm = new WordForm();
+    wordForm.render(req, res, {
+      edit: word
+    });
+  });
+});
+
+
 app.get('/delete/:id', function(req, res) {
   var id = req.param('id');
-  flashcardHandler.remove('words', id, function(error, results) {
+  flashcardHandler.remove( global.wordsCollection, id, function(error, results) {
     if (error) app.prettyError(error, req, res);
     res.render('index', {
       pageTitle: 'Delete',
@@ -210,15 +197,15 @@ app.get('/play', function(req, res) {
   
   // get a random word...
   
-  flashcardHandler.getRandom('words', function(error, results) {
+  flashcardHandler.getRandom(global.wordsCollection, function(error, results) {
     if (error) {
       app.prettyError(util.inspect(error), req, res);    //END.
     }
     else {
-      debug += util.inspect(results) + '<br/>';
+      // debug += util.inspect(results) + '<br/>';
       var word = new WordModel(results);
 
-      debug += util.inspect(word) + '<br/>';
+      // debug += util.inspect(word) + '<br/>';
       
       // render page w/ results
       res.render('play', {

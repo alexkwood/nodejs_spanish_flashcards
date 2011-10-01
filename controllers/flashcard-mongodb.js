@@ -1,17 +1,24 @@
 /* simple mongodb handler for Flashcards
    put in /controllers dir, quasi-MVC
+   add functions to prototype -- need to instantiate a controller to use.
+   
+   convention for 'callback' -- takes error (null on success) + results
+   
+   this is very generic ... is it necessary at all? shouldn't all this be part of the mongo module?
 */
 
-// @todo how to make this global?? already loaded in app.js.
 var _ = require('underscore')._;
+var mongodb = require("mongodb");   // better here or in constructor?
+var BSON = require('mongodb').BSONPure;
 
+
+// object constructor
 FlashcardHandler = function() {
-  mongodb = require("mongodb");
-  
   this.mongo = new mongodb.Server('localhost', mongodb.Connection.DEFAULT_PORT, { auto_reconnect:true });
-  this.db = new mongodb.Db('flashcards', this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
+  this.db = new mongodb.Db(global.dbName, this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
   this.db.open(function(){}); //?
 };
+
 
 FlashcardHandler.prototype.getCollection = function(collectionName, callback) {
   var db = this.db;   // otherwise gets lost ... figure out why!
@@ -28,24 +35,24 @@ FlashcardHandler.prototype.getCollection = function(collectionName, callback) {
 };
 
 FlashcardHandler.prototype.findAll = function(collectionName, callback) {
-    this.getCollection(collectionName, function(error, collection) {
-      if (error) callback(error);
-      else {
-        collection.find(function(error, cursor) {
-          if (error) callback(error);
-          else {
-            cursor.toArray(function(error, results) {
-              if (error) callback(error);
-              else callback(null, results);
-            });
-          }
-        });
-      }
-    });
+  this.getCollection(collectionName, function(error, collection) {
+    if (error) callback(error);
+    else {
+      collection.find(function(error, cursor) {
+        if (error) callback(error);
+        else {
+          cursor.toArray(function(error, results) {
+            if (error) callback(error);
+            else callback(null, results);
+          });
+        }
+      });
+    }
+  });
 };
 
+
 // doc should be a modeled object
-// callback() takes (error, results)
 FlashcardHandler.prototype.save = function(collectionName, doc, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
@@ -59,43 +66,24 @@ FlashcardHandler.prototype.save = function(collectionName, doc, callback) {
 };
 
 
-// ATTEMPT TO USE SEQUENTIAL IDS, CAN'T GET IT TO WORK. GOING BACK TO HASH ID'S.
-// get max _id + 1
-// (count() isn't enough b/c deleting records causes dups)
-/*FlashcardHandler.prototype.getNextId = function(collectionName, callback) {
+FlashcardHandler.prototype.getById = function(collectionName, id, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
-    else {
-      collection.mapReduce(
-        function map() {
-          // console.log('map: ', this);
-          emit(this._id);
-        },
-        function reduce (key, values) {
-          // console.log('reduce: ', key, values);
-          // console.log('reduced to:', reduced);
-          return Math.max.apply(Math, values);
-        },
-        { 
-          out: collectionName + '_ids',
-          keeptemp: false,    // might as well make it permanent
-          finalize: function fin(key, value) {
-            // console.log('fin: ', key, value);
-            return db.oplan.findOne({id:key, num:value});   // what is oplan??
-          }  //,
-          // limit: 1,
-        }, 
-        function(error, docs) {
-          // console.log('reduce: ', docs);
-          if (error) callback(error);
-          else callback(null, docs);
+    else {      
+      collection.findOne({ _id: BSON.ObjectID(id) }, function(error, doc){
+        if (error) callback(error);
+        else {
+          console.log('doc:', doc);
+          callback(null, doc);
         }
-      );
+      });
     }
   });
 };
-*/
 
+
+
+// get a random doc in a collection
 FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
@@ -105,16 +93,17 @@ FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
         
         // skip a random number of records
         var skip = Math.floor( Math.random() * count );
-        
+
+        // impt: can't use findOne() w/ skip for some reason.
         collection.find({}, { limit: 1, skip: skip }, function(error, cursor){
           if (error) callback(error);
           
           cursor.nextObject( function(error, doc){
             if (error) callback(error);
-            
-            console.log('doc:', doc);
-            
-            callback(null, doc);
+            else {
+              console.log('doc:', doc);            
+              callback(null, doc);
+            }
           });
         });
       });
@@ -122,13 +111,13 @@ FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
   });
 };
 
+
 FlashcardHandler.prototype.remove = function(collectionName, id, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) callback(error);
     else {
-      collection.remove({ _id: id }, function(error, result) {
+      collection.remove({ _id: BSON.ObjectID(id) }, function(error, result) {
         if (error) callback(error);
-        
         callback(null, result);
       });
     }

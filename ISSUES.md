@@ -16,4 +16,20 @@
 
 * forms plugin -- after submitted, want to show form again but EMPTY; shows submitted values. how to reset?
 
-* how to catch un-handled paths w/o crash?
+* how to catch un-handled paths w/o crash? [is try-catch enough?]
+
+* what's the proper way to set global app variables that get inherited by exported modules?
+  - or is there something better than require() for sub-files?
+
+* ObjectID.createFromHexString() doesn't work -- how to query mongodb by ID?
+  - BSON.ObjectID()
+
+* what's the best way to pass an _id for editing? hidden field seems clunky.
+
+## todo
+
+* auth
+
+* replace less.js with compiler plugin in Connect: http://senchalabs.github.com/connect/middleware-compiler.html
+
+* on remove(), how to handle both ObjectID and other ID types?

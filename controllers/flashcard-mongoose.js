@@ -2,7 +2,7 @@
 
 // var db = mongoose.connect({
 //   host: 'localhost',
-//   database: 'flashcards',
+//   database: global.dbName,
 //   port: 27017,
 //   options: {}
 // });

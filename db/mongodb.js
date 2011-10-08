@@ -1,10 +1,10 @@
 /* simple mongodb handler for Flashcards
-   put in /controllers dir, quasi-MVC
+   -- it's really a GENERIC mongo handler, which begs the question, 
+      is it necessary at all? shouldn't all this be part of the mongo module?
+
    add functions to prototype -- need to instantiate a controller to use.
    
    convention for 'callback' -- takes error (null on success) + results
-   
-   this is very generic ... is it necessary at all? shouldn't all this be part of the mongo module?
 */
 
 var _ = require('underscore')._;
@@ -12,21 +12,21 @@ var mongodb = require("mongodb");   // better here or in constructor?
 var BSON = require('mongodb').BSONPure;
 
 
-// object constructor
-FlashcardHandler = function() {
+// constructor + export. (are all the intermediaries necessary?)
+var MongoHandler = exports = module.exports = function(dbName) {
   this.mongo = new mongodb.Server('localhost', mongodb.Connection.DEFAULT_PORT, { auto_reconnect:true });
-  this.db = new mongodb.Db(global.dbName, this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
+  this.db = new mongodb.Db(dbName, this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
   this.db.open(function(){}); //?
 };
 
 
-FlashcardHandler.prototype.getCollection = function(collectionName, callback) {
+MongoHandler.prototype.getCollection = function(collectionName, callback) {
   var db = this.db;   // otherwise gets lost ... figure out why!
   db.collection(collectionName, function(error, collection) {
     if (error) {
       // don't fail just yet -- try to CREATE the collection in case it doesn't exist.
       db.createCollection(collectionName, function(error, collection){
-        if (error) callback(error);
+        if (error) return callback(error);
         else callback(null, collection);
       });      
     }
@@ -34,15 +34,15 @@ FlashcardHandler.prototype.getCollection = function(collectionName, callback) {
   });
 };
 
-FlashcardHandler.prototype.findAll = function(collectionName, callback) {
+MongoHandler.prototype.getAllDocuments = function(collectionName, callback) {
   this.getCollection(collectionName, function(error, collection) {
-    if (error) callback(error);
+    if (error) return callback(error);
     else {
       collection.find(function(error, cursor) {
-        if (error) callback(error);
+        if (error) return callback(error);
         else {
           cursor.toArray(function(error, results) {
-            if (error) callback(error);
+            if (error) return callback(error);
             else callback(null, results);
           });
         }
@@ -53,25 +53,33 @@ FlashcardHandler.prototype.findAll = function(collectionName, callback) {
 
 
 // doc should be a modeled object
-FlashcardHandler.prototype.save = function(collectionName, doc, callback) {
+MongoHandler.prototype.save = function(collectionName, doc, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
-    if (error) callback(error);
-    else {
-      collection.insert(doc, function(error, docs) {
-        if (error) callback(error);
-        else callback(null, docs);
-      });
-    }
+    if (error) return callback(error);
+
+    collection.save(doc, {}, function(error, result) {
+      console.log('collection.save:', error, result);
+      if (error) return callback(error);
+      
+      // if save() results in update(), then 'result' will be null. assume success if no error. [??]
+      if (_.isEmpty(result)) {
+        result = doc;
+        console.log('[save] assuming successful update()', result);
+      }
+      
+      return callback(null, result);
+    });
   });
 };
 
 
-FlashcardHandler.prototype.getById = function(collectionName, id, callback) {
+MongoHandler.prototype.getById = function(collectionName, id, callback) {
+  id = this.objectID(id);
   var collection = this.getCollection(collectionName, function(error, collection) {
-    if (error) callback(error);
+    if (error) return callback(error);
     else {      
-      collection.findOne({ _id: BSON.ObjectID(id) }, function(error, doc){
-        if (error) callback(error);
+      collection.findOne({ _id: id }, function(error, doc){
+        if (error) return callback(error);
         else {
           console.log('doc:', doc);
           callback(null, doc);
@@ -84,22 +92,22 @@ FlashcardHandler.prototype.getById = function(collectionName, id, callback) {
 
 
 // get a random doc in a collection
-FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
+MongoHandler.prototype.getRandom = function(collectionName, callback) {
   var collection = this.getCollection(collectionName, function(error, collection) {
-    if (error) callback(error);
+    if (error) return callback(error);
     else {
       collection.count(function(error, count) {
-        if (error) callback(error);
+        if (error) return callback(error);
         
         // skip a random number of records
         var skip = Math.floor( Math.random() * count );
 
         // impt: can't use findOne() w/ skip for some reason.
         collection.find({}, { limit: 1, skip: skip }, function(error, cursor){
-          if (error) callback(error);
+          if (error) return callback(error);
           
           cursor.nextObject( function(error, doc){
-            if (error) callback(error);
+            if (error) return callback(error);
             else {
               console.log('doc:', doc);            
               callback(null, doc);
@@ -112,12 +120,13 @@ FlashcardHandler.prototype.getRandom = function(collectionName, callback) {
 };
 
 
-FlashcardHandler.prototype.remove = function(collectionName, id, callback) {
+MongoHandler.prototype.remove = function(collectionName, id, callback) {
+  id = this.objectID(id);
   var collection = this.getCollection(collectionName, function(error, collection) {
-    if (error) callback(error);
+    if (error) return callback(error);
     else {
-      collection.remove({ _id: BSON.ObjectID(id) }, function(error, result) {
-        if (error) callback(error);
+      collection.remove({ _id: id }, function(error, result) {
+        if (error) return callback(error);
         callback(null, result);
       });
     }
@@ -125,4 +134,12 @@ FlashcardHandler.prototype.remove = function(collectionName, id, callback) {
 };
 
 
-exports.FlashcardHandler = FlashcardHandler;
+// convert an ID string to an ObjectID
+MongoHandler.prototype.objectID = function(id) {
+  try {
+    return BSON.ObjectID(id);
+  }
+  catch(e) {
+    return id;
+  }
+};

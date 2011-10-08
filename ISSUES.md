@@ -26,6 +26,10 @@
 
 * what's the best way to pass an _id for editing? hidden field seems clunky.
 
+* on mongodb save/update, update() returns no result in callback, is it safe to assume success?
+
+* when same path needs exact same handling for get and post, how to avoid duplicating??
+
 ## todo
 
 * auth
@@ -33,3 +37,6 @@
 * replace less.js with compiler plugin in Connect: http://senchalabs.github.com/connect/middleware-compiler.html
 
 * on remove(), how to handle both ObjectID and other ID types?
+
+* convert callback() calls to `return callback()` to eliminate else{}
+

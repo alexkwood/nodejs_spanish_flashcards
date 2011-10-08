@@ -73,11 +73,12 @@ ul.words {
     }
   }
   
-  a.edit, a.delete {
-    margin-right: 1em;
+  .links {
+    float: left;
+    a {
+      margin-right: 1em;
+    }
   }
-  a.edit {}
-  a.delete {}
 }
 
 
@@ -125,4 +126,21 @@ ul.words {
 
 a#next {
   font-size: 1.5em;
+}
+
+
+#messages {
+  ul {
+    padding-left: 0;
+  }
+  span.msg-type {
+    color: #999;
+    padding-right: 1em;
+  }
+  
+  ul.error {
+    span.msg-type {
+      color: red;
+    }
+  }
 }

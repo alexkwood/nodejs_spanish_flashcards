@@ -18,8 +18,7 @@ html
     block nav
       include includes/nav
     
-    - if (pageTitle)
-      h2= pageTitle
+      h2= pageTitle || ''
     
     // flash messages. (ok in layout?)
     != messages()    

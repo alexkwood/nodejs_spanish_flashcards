@@ -5,6 +5,8 @@
    add functions to prototype -- need to instantiate a controller to use.
    
    convention for 'callback' -- takes error (null on success) + results
+   
+   @todo handle DB outage more gracefully. timeout on connection?   
 */
 
 var _ = require('underscore')._;

@@ -21,7 +21,7 @@ module.exports = function(app){
       }
       else {
         // debug += util.inspect(results) + '<br/>';
-        var word = new WordModel(results);
+        var word = new Word(results);
 
         // debug += util.inspect(word) + '<br/>';
 

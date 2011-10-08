@@ -9,8 +9,11 @@ new url structure:
 */
 
 // all DB handling goes thru model
-var Word = require('../models/word.js');
+var WordHandler = require('../models/word.js');     // don't use 'Word' name to avoid confusion
 
+var util = require('util');
+
+var _ = require('underscore')._;
 
 // app passed as closure
 module.exports = function(app){
@@ -19,9 +22,20 @@ module.exports = function(app){
   app.param('word', function(req, res, next, id){
     console.log('processing word param:', id);
     
-    // ...
-    
-    next();   // [assume necessary?]
+    WordHandler.getById(id, function(error, word) {
+      if (error) {
+        
+        // @TODO THIS NEEDS TO HANDLE INVALID ID'S!!
+        
+        req.flash('error', util.inspect(error));    // [added]
+        return next(error);      // what does this do?
+      }
+      
+      req.word = new WordHandler(word);
+      // console.log('matched word: ', req.word);
+      
+      next();     // continues to router?
+    });
   });
   
   
@@ -30,15 +44,29 @@ module.exports = function(app){
   });
   
   app.get('/word/list', function(req, res) {
-    Word.getAll(function(error, docs) {
-      if (error) app.prettyError(error, req, res);
+    WordHandler.getAll(function(error, words) {
+      if (error) {
+        req.flash('error', "Error: " + util.inspect(error));
+        res.redirect('back');
+      }
       else {
-        res.render('list', {
+        // console.log('words:', words);
+        
+        res.render('word/list', {
           pageTitle: 'List',
-          words: docs
-          // , debug: '<pre>' + util.inspect(req) + '</pre>'
-          // , debug: '<pre>' + util.inspect(docs) + '</pre>'
+          words: words
         });
+      }
+    });
+  });
+  
+  
+  // after all the fixed /word/X, assume X is an ID.
+  app.get('/word/:word', function(req, res) {
+    res.render('word/word', {
+      locals: {
+        word: req.word,
+        pageTitle: ''
       }
     });
   });

@@ -3,26 +3,23 @@
 // @todo figure out which of these are really necessary
 var express = require('express'),
     app = module.exports = express.createServer(),
-    messages = require('express-messages'),
+    // messages = require('express-messages'),
+    messages = require('./messages'),
     // events = require('events'),
-    sys = require('sys'),
-    util = require('util'),
-    fs = require('fs'), //?
-    parse = require('url').parse,
-    forms = require('forms'),
-    fields = forms.fields,    // all needed here?
-    widgets = forms.widgets,
-    validators = forms.validators,
-    _ = require('underscore')._   //,
+    sys = require('sys')
+    // util = require('util')
+    // fs = require('fs'), //?
+    // parse = require('url').parse,
+    // forms = require('forms'),
+    // fields = forms.fields,    // all needed here?
+    // widgets = forms.widgets,
+    // validators = forms.validators,
+    // _ = require('underscore')._   //,
     // wordModel = require('./models/word')
     ;
 
-// db handler [generic]
-// @should only be loaded when needed by route!
-require('./controllers/flashcard-mongodb.js');
-
 // [quasi] models
-require('./models/word');
+// require('./models/word');
 
 // global vars -- [is this bad form?]
 // global.dbName = 'flashcards';
@@ -32,41 +29,45 @@ global.appTitle = 'Ben\'s Spanish Flashcards';
 // instantiate a db/model handler
 // var flashcardHandler = new FlashcardHandler();
 
-// custom event handler
-// var eventEmitter = new events.EventEmitter;
 
-// Configuration
-app.configure(function(){
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
-  app.use(express.bodyParser());   // [doesn't work w/ 'forms' module. not using anymore.]
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'quien es' }));
-  app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
-});
+// [what's the difference between putting here or inside app.configure() ??]
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
 
 
 // middleware
 app.dynamicHelpers({
-  appTitle: global.appTitle, //function(req,res) { return global.appTitle; },
+  appTitle: function(req,res) { return global.appTitle; }
 
-  messages: messages,   // from express-messages module, use req.flash() to populate.
+  , messages: messages        // from express-messages module, use req.flash() to populate.
 
   // return the app's mount-point so that urls can adjust
-  base: function(){
+  , base: function(){
     return '/' == app.route ? '' : app.route;
   }
 });
 
-// per-environment config
-app.configure('development', function(){
+// Configuration
+app.configure(function(){
+  app.use(express.bodyParser());   // [doesn't work w/ 'forms' module. not using anymore.]
+  app.use(express.methodOverride());
+  app.use(express.cookieParser());
+  app.use(express.session({ secret: 'quien es' }));
+  app.use(app.router);
+  app.use(express.static(__dirname + '/public'));
+
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
 });
 
-app.configure('production', function(){
-  app.use(express.errorHandler()); 
-});
+
+// per-environment config
+// app.configure('development', function(){
+//   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+// });
+// 
+// app.configure('production', function(){
+//   app.use(express.errorHandler()); 
+// });
 
 
 
@@ -142,15 +143,15 @@ require('./routes/word.js')(app);
 
 
 // catch everything else
-app.all('*', function(req, res, next) {
+/*app.all('*', function(req, res, next) {
   res.render('error', {
     pageTitle: 'Not Found',
     error: 'The requested page does not exist.'
   });
 });
+*/
 
-
-// @todo find a more express-y way to do this.
+// @todo find a more express-y way to do this. -- flash messages?
 app.prettyError = function(error, req, res) {
   res.render('error', {
     pageTitle: 'An error occurred',

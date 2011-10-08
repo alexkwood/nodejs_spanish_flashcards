@@ -1,55 +1,119 @@
-/* model for 'word' entities */
+/* model for 'word' entities
+   use the generic db model
+*/
 
 var _ = require('underscore')._;
 
-var MongoHandler = require('../db/mongodb.js');
-var db = new MongoHandler('flashcards');    // db name
+var mongoHandler = require('../db/mongodb.js');
+var db = new mongoHandler('flashcards');    // db name
 
 var collectionName = 'words';     // where should this go?
 
-// simple model for Words (class)
-var WordModel = exports = module.exports = function(word) {
+
+// simple model for individual Words
+var Word = exports = module.exports = function(word) {
+  if (_.isEmpty(word)) word = {};
   
-  // merge w/ defaults
-  word = _.extend({
-    word_es: '',
-    word_en: '',
-    type: '',
-    created: new Date(),
-    updated: null
-  }, word);
+  // map properties of 'word' and fill missing values w/ defaults.
+  _.extend(this, 
+    {
+      word_es: '',
+      word_en: '',
+      type: '',
+      created: null,    //new Date(),
+      updated: null
+    },
+    word);
   
-  return word;
+  // return word;
 };
 
-
-// use the generic db model
-
-WordModel.prototype.getAll(callback) {
-  db.getAllDocuments(collectionName, callback);
+Word.prototype.save = function(callback) {
+  
+  // @todo add a Created, Updated date
+  
+  //db.save(collectionName, this, callback);
+  callback("TODO: save the doc.");
 };
 
-WordModel.prototype.save(word, callback) {
-  db.save(collectionName, word, callback);
+// get the friendly type of this word
+Word.prototype.getType = function() {
+  var types = exports.getTypes();     // in same file, does that work?
+  if (!_.isEmpty(this.type) && !_.isUndefined(types[this.type])) {
+    return types[this.type];
+  }
+  return this.type;
 };
 
-WordModel.prototype.getById(id, callback) {
-  db.getById(collectionName, id, callback);
-};
+// @todo 'update' separate from 'save'?
 
-WordModel.prototype.getRandom(callback) {
-  db.getRandom(collectionName, callback);
-};
-
-WordModel.prototype.remove() {
-  db.remove(collectionName, id, callback);
-};
-
-// WordModel.prototype.XXX() {
+// Word.prototype.XXX = function() {
 // };
 
 
 ////////////////////////////////////////////
+
+// word-related handlers not specific to an INDIVIDUAL word.
+
+// @todo make all these functions MAP to model
+
+// take an array of word objects from the DB or elsewhere, and map them to the model object.
+// meant to be a helper function for other getters here that retrieve multiple words.
+exports.mapWordsToModel = function(error, words, callback) {
+  if (error) callback(error);
+  else {
+    words = _.map(words, function mapWordToModel(word) {
+      return new Word(word);
+    });
+    callback(null, words);
+  }
+};
+
+exports.getById = function(id, callback) {
+  db.getById(collectionName, id, function(error, word) {
+    if (error) callback(error);
+    else {
+      callback(null, new Word(word));
+    }
+  });
+};
+
+exports.getRandom = function(callback) {
+  db.getRandom(collectionName, function(error, word) {
+    if (error) callback(error);
+    else {
+      callback(null, new Word(word));
+    }
+  });
+};
+
+exports.getAll = function(callback) {
+  db.getAllDocuments(collectionName, function(error, words) {
+    exports.mapWordsToModel(error, words, callback);
+  });
+};
+
+// -- should this be part of Word object or separate export?
+exports.remove = function() {
+  db.remove(collectionName, id, callback);
+};
+
+
+// word types, i.e. parts of speech
+// used by getType() on word object.
+exports.getTypes = function() {
+  return {
+    'n': 'noun',
+    'v': 'verb',
+    'adj': 'adjective',
+    'adv': 'adverb',
+    'pro': 'pronoun',
+    'phrase' : 'phrase'
+  };
+};
+
+////////////////////////////////////////////
+
 
 /*
 WordForm = function() {
@@ -131,7 +195,7 @@ WordForm = function() {
 
         console.log('form data:', form.data);
 
-        var word = new WordModel(form.data);
+        var word = new Word(form.data);
         console.log('word to save:', word);
         
         // is this an EDIT?

@@ -20,6 +20,8 @@ var Word = exports = module.exports = function(word) {
       word_es: '',
       word_en: '',
       type: '',
+      
+      // should these be here, or only handled on save?
       created: null,    //new Date(),
       updated: null
     },
@@ -28,13 +30,38 @@ var Word = exports = module.exports = function(word) {
   // return word;
 };
 
-Word.prototype.save = function(callback) {
+
+// make sure all the required pieces are in.
+Word.prototype.validate = function(callback) {
+  try {
+    if (_.isEmpty(this.word_es)) return callback(new Error('Missing Spanish word.'));
+    if (_.isEmpty(this.word_en)) return callback(new Error('Missing English word.'));
+    // [type is optional]
+  }
+  catch(error) {    // if something else is wrong w/ object & can't check properties
+    callback(error);    // good?
+  }
   
-  // @todo add a Created, Updated date
-  
-  //db.save(collectionName, this, callback);
-  callback("TODO: save the doc.");
+  callback();
 };
+
+
+Word.prototype.save = function(callback) {
+  console.log('saving word: ', this);
+  
+  // set a Created or Updated date.
+  if (_.isUndefined(this.created)) {
+    this.created = new Date;
+    console.log('set created date to ', this.created);
+  }
+  else {
+    this.updated = new Date;
+    console.log('set updated date to ', this.updated);
+  }
+  
+  db.save(collectionName, this, callback);
+};
+
 
 // get the friendly type of this word
 Word.prototype.getType = function() {
@@ -94,7 +121,7 @@ exports.getAll = function(callback) {
 };
 
 // -- should this be part of Word object or separate export?
-exports.remove = function() {
+exports.remove = function(id, callback) {
   db.remove(collectionName, id, callback);
 };
 

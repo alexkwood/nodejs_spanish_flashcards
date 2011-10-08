@@ -1,0 +1,21 @@
+//- form for adding or editing a word
+
+form#add-word(method='post', action=action)
+
+  div.field
+    label Spanish
+    input(type='text', name='word_es', id='word_es', value=word.word_es)
+
+  div.field
+    label English
+    input(type='text', name='word_en', id='word_en', value=word.word_en)
+  
+  div.field
+    label Type
+    select(name='type')
+      option(value='') -
+      - each type in types
+        option(value=type.key, selected=type.selected)= type.value
+  
+  div.field
+    input(type='submit', value=word._id ? 'Update' : 'Create')

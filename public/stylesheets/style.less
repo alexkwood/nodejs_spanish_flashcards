@@ -1,6 +1,10 @@
 body {
-  padding: 50px;
+  padding: 10px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+body > h1 {
+  margin-top: 0;
 }
 
 a {
@@ -52,12 +56,17 @@ ul#nav {
 
 
 ul.words {
+  float: left;
+  width: 100%;
   .clearlist;
   
   li {
-    margin-bottom: 1em;
     float: left;
     clear: both;
+    
+    margin-bottom: .5em;
+    padding-bottom: .5em;
+    border-bottom: dotted 1px #ccc;
     
     div {
       float: left;
@@ -65,7 +74,7 @@ ul.words {
     
     span {
       margin: 0 20px 0 0;
-      width: 80px;
+      width: 100px;
       min-height: 1em;
       display: block;
       float: left;
@@ -109,6 +118,7 @@ ul.words {
     ul.words, ul.words li {
       width: 100%;
       clear: both;
+      border-bottom: none;
     }
     
     li div {
@@ -180,4 +190,16 @@ a#next {
       color: red;
     }
   }
+}
+
+
+#footer {
+  float: left;
+  width: 100%;
+  .clearlist;
+  font-size: .8em;
+  color: #999;
+  margin: 4em 0 0 0;
+  padding: .5em 0 1em 0;
+  /*border-top: dashed #999 1px;*/
 }

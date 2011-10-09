@@ -5,6 +5,7 @@ var express = require('express')
     , app = module.exports = express.createServer()
     , messages = require('./messages')   // [modified from lib]
     //, sys = require('sys')
+    , _ = require('underscore')._
     ;
 
 // [quasi] models
@@ -32,6 +33,14 @@ app.dynamicHelpers({
   // return the app's mount-point so that urls can adjust
   , base: function(){
     return '/' == app.route ? '' : app.route;
+  }
+  
+    // generate a body class based on URL
+  , bodyClass: function(req, res) {
+      var parts = require('url').parse(req.url).pathname.split('/');
+      parts = _.compact(parts);
+      if (parts.length == 0) return 'home';
+      return parts.join('-');
   }
 });
 

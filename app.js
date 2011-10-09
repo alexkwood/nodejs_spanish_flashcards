@@ -26,6 +26,11 @@ var express = require('express'),
 // global.wordsCollection = 'words';
 global.appTitle = 'Ben\'s Spanish Flashcards';
 
+global.wordLanguages = {
+  "en": "English",
+  "es": "Spanish"
+};
+
 // instantiate a db/model handler
 // var flashcardHandler = new FlashcardHandler();
 
@@ -76,7 +81,7 @@ app.configure(function(){
 // delegate routers w/ closures
 require('./routes/home.js')(app);
 require('./routes/word.js')(app);
-// require('./routes/play.js')(app);
+require('./routes/play.js')(app);
 
 
 // // form page loaded (not submitted)

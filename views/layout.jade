@@ -5,7 +5,9 @@ html
     link(rel='stylesheet/less', type='text/css', href='/stylesheets/style.less')
     script(src='/javascripts/lesscss.min.js')
     script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
+    script(src='/javascripts/flashcards.js')
     
+    //- allow pages to have their own scripts
     - if (typeof extraScripts != 'undefined')
       - extraScripts.forEach(function(script){
           script(src='#{script}')
@@ -20,11 +22,6 @@ html
     
       h2= pageTitle || ''
     
-    // flash messages. (ok in layout?)
     != messages()    
     
     != body
-  
-    - if (typeof debug != 'undefined')
-      div.debug
-        != debug

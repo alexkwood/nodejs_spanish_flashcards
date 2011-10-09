@@ -1,45 +1,44 @@
 // routes: /play/*
 
+var WordHandler = require('../models/word.js');     // don't use 'Word' name to avoid confusion
+var util = require('util');
+var _ = require('underscore')._;
+
+
 // app passed as closure
 module.exports = function(app){
   
   app.get('/play', function(req, res) {
-    app.use(express.bodyParser());
 
-    //@todo separate this to its own controller
-    var debug = '';
+    // word shown can be in either language
+    var langCodes = _.keys(global.wordLanguages);    
+    var lang = langCodes[ Math.floor( Math.random() * langCodes.length ) ];
 
-    // show which language
-    var langs = ['es','en'];
-    var lang = langs[ Math.floor( Math.random() * _.size(langs) ) ];
-
-    // get a random word...
-
-    flashcardHandler.getRandom(global.wordsCollection, function(error, results) {
+    // get a random modeled word.
+    WordHandler.getRandom(function(error, word) {
       if (error) {
-        app.prettyError(util.inspect(error), req, res);    //END.
+        req.flash('error', "Error: " + util.inspect(error));
+        res.redirect('/word/list');
       }
       else {
-        // debug += util.inspect(results) + '<br/>';
-        var word = new Word(results);
-
-        // debug += util.inspect(word) + '<br/>';
-
-        // render page w/ results
+        console.log('random word:', word);
+        
+        if (_.isUndefined(word['word_' + lang])) {
+          req.flash('error', "Error: Missing " + global.wordLanguages[lang] + " word.");
+          res.redirect('/word/list');
+        }
+        
         res.render('play', {
           pageTitle: 'Play',
+          question: word['word_' + lang],     // shown word
+          langCode: lang,
+          language: global.wordLanguages[lang].toLowerCase(),
           word: word,
-          lang: lang,
-          question: word['word_' + lang],
-          extraScripts: [
-            '/javascripts/play.js'
-          ]
-          // , debug: debug
+          showWordLinks: true //false
         });
       }
-    });
+    }); //getRandom
 
-  });
-  
+  });  //app.get
   
 };

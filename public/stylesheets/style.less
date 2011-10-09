@@ -54,14 +54,19 @@ ul#nav {
 ul.words {
   .clearlist;
   
-  li.word {
+  li {
     margin-bottom: 1em;
     float: left;
     clear: both;
     
+    div {
+      float: left;
+    }
+    
     span {
       margin: 0 20px 0 0;
       width: 80px;
+      min-height: 1em;
       display: block;
       float: left;
     }
@@ -101,9 +106,18 @@ ul.words {
     font-size: 2em;
     margin-top: 1em;
     
-    ul.words, li.word {
+    ul.words, ul.words li {
       width: 100%;
       clear: both;
+    }
+    
+    li div {
+      clear: both;
+    }
+    
+    div.type {
+      font-size: .8em;
+      margin-top: .5em;
     }
     
     span {
@@ -112,9 +126,14 @@ ul.words {
     }
     span.label {
       width: 5em;
-      clear: left;
+      /*clear: left;*/
     }
     
+    div.links {
+      clear: both;
+      font-size: .5em;
+      margin-top: 2em;
+    }
   }
   
   a#show {
@@ -124,14 +143,32 @@ ul.words {
   }
 }
 
+#play.lang-en #answer div.english,
+#play.lang-es #answer div.spanish
+ { display: none; }
+
+
 a#next {
   font-size: 1.5em;
 }
 
 
 #messages {
+  border: dashed #999 1px;
+  padding: 5px 5px 0 5px;
+  margin: 0 0 2em 0;
+  font-weight: bold;
+  
+  ul, li {
+    list-style-type: none;
+  }
   ul {
     padding-left: 0;
+    margin: 0;
+    
+    li {
+      margin-bottom: .5em;
+    }
   }
   span.msg-type {
     color: #999;

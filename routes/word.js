@@ -2,8 +2,9 @@
 
 /*
 new url structure:
-- /word/new
-- /word/:word
+- /word/add
+- /word/list
+- /word/:word (view)
 - /word/:word/edit
 - /word/:word/delete
 */
@@ -54,7 +55,8 @@ module.exports = function(app){
         
         res.render('word/list', {
           pageTitle: 'List',
-          words: words
+          words: words,
+          showWordLinks: true
         });
       }
     });
@@ -75,6 +77,7 @@ module.exports = function(app){
       }
     });
   });
+
   
   
   app.get('/word/:word/edit', function(req, res) {
@@ -102,10 +105,12 @@ module.exports = function(app){
 
   // after all the fixed /word/X, assume X is an ID.
   app.get('/word/:word', function(req, res) {
-    res.render('word/word', {
+    // 'list' view includes styles, 'word' is a partial.
+    res.render('word/list', {
       locals: {
-        word: req.word,
-        pageTitle: ''
+        words: [ req.word ],
+        pageTitle: '',
+        showWordLinks: true
       }
     });
   });
@@ -133,25 +138,29 @@ module.exports = function(app){
     console.log('updated word:', updatedWord);
     
     // save if validates.
-    updatedWord.validate(function(error, callback) {
+    updatedWord.validate(function(error) {
       if (error) {
         req.flash('error', error.message);
         return res.redirect('back');
       }
-    });
-
-    updatedWord.save(function(error){
-      if (error) return next(error);    // ??
       
-      req.flash('info', "Successfully updated word '" + updatedWord.word_en + "' / '" + updatedWord.word_es + "'");
-      res.redirect('/word/list');
+      updatedWord.save(function(error){
+        if (error) {
+          console.log("Error on save: %j", error);
+          return next(error);    // ??
+        }
+
+        req.flash('info', "Successfully updated word '" + updatedWord.word_en + "' / '" + updatedWord.word_es + "'");
+        res.redirect('/word/list');
+      });
+      
     });
   });
   
   
   app.get('/word/:word/delete', function(req, res) {
     console.log('deleting:', req.word);
-    WordHandler.remove(req.word._id, function(error, callback) {
+    WordHandler.remove(req.word._id, function(error) {
       if (error) {
         req.flash('error', error.message);
         return res.redirect('back');

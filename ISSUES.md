@@ -40,3 +40,24 @@
 
 * convert callback() calls to `return callback()` to eliminate else{}
 
+----
+
+* "console.dir() is an alias for util.inspect()"
+  - also use other params of util.inspect() -- util.inspect(object, showHidden=false, depth=2, colorize=true);
+
+* debug app according to http://docs.nodejitsu.com/articles/getting-started/how-to-debug-nodejs-applications
+
+* check out: 
+    `var Args = require("vargs").Constructor;
+
+    example = function () {
+      var args = new Args(arguments);
+      args.callback.apply({},args.all);
+    }`
+
+* check out: `var obj = { get a() { return "something" }, set a() { "do nothing" } } getter/setter syntax`
+
+* use `Object.create(proto, props)` instead of _.extend() for constructor?
+
+* "All object properties should always be double quoted" (nodejitsu) - why?
+

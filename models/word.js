@@ -99,18 +99,14 @@ exports.mapWordsToModel = function(error, words, callback) {
 exports.getById = function(id, callback) {
   db.getById(collectionName, id, function(error, word) {
     if (error) callback(error);
-    else {
-      callback(null, new Word(word));
-    }
+    else callback(null, new Word(word));
   });
 };
 
 exports.getRandom = function(callback) {
   db.getRandom(collectionName, function(error, word) {
     if (error) callback(error);
-    else {
-      callback(null, new Word(word));
-    }
+    else callback(null, new Word(word));
   });
 };
 

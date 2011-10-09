@@ -1,10 +1,19 @@
-li.word
+//- partial for each word in 'list' view
+
+div.spanish
   span.label spanish
-  span.es= word.word_es || '[missing]'
+  span= word.word_es || '[missing]'
 
+div.english
   span.label english      
-  span.en= word.word_en || '[missing]'
+  span= word.word_en || '[missing]'
 
+div.type
   span.label type
-  span.type!= word.getType()
-    
+  span!= word.getType()
+
+- if (typeof showWordLinks != 'undefined' && showWordLinks == true)
+  div.links
+    a.perma(href='/word/#{word._id}') link
+    a.edit(href='/word/#{word._id}/edit') edit
+    a.delete(href='/word/#{word._id}/delete') delete

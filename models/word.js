@@ -4,11 +4,7 @@
 
 var _ = require('underscore')._;
 
-var mongoHandler = require('../db/mongodb.js');
-var db = new mongoHandler('flashcards');    // db name
-
 var collectionName = 'words';     // where should this go?
-
 
 // simple model for individual Words
 var Word = exports = module.exports = function(word) {
@@ -46,7 +42,7 @@ Word.prototype.validate = function(callback) {
 };
 
 
-Word.prototype.save = function(callback) {
+Word.prototype.save = function(db, callback) {
   console.log('saving word: ', this);
   
   // set a Created or Updated date.
@@ -96,28 +92,28 @@ exports.mapWordsToModel = function(error, words, callback) {
   }
 };
 
-exports.getById = function(id, callback) {
+exports.getById = function(db, id, callback) {
   db.getById(collectionName, id, function(error, word) {
     if (error) callback(error);
     else callback(null, new Word(word));
   });
 };
 
-exports.getRandom = function(callback) {
+exports.getRandom = function(db, callback) {
   db.getRandom(collectionName, function(error, word) {
     if (error) callback(error);
     else callback(null, new Word(word));
   });
 };
 
-exports.getAll = function(callback) {
+exports.getAll = function(db, callback) {
   db.getAllDocuments(collectionName, function(error, words) {
     exports.mapWordsToModel(error, words, callback);
   });
 };
 
 // -- should this be part of Word object or separate export?
-exports.remove = function(id, callback) {
+exports.remove = function(db, id, callback) {
   db.remove(collectionName, id, callback);
 };
 

@@ -20,10 +20,9 @@ var _ = require('underscore')._;
 module.exports = function(app){
 
   // process :word param when passed
-  app.param('word', function(req, res, next, id){
-    // console.log('processing word param:', id);
-    
-    WordHandler.getById(id, function(error, word) {
+  // [how does connectDb middleware work here?]
+  app.param('word', app.connectDb, function(req, res, next, id){
+    WordHandler.getById(req.db, id, function(error, word) {
       if (error) {
         
         // @TODO THIS NEEDS TO HANDLE INVALID ID'S!!
@@ -40,12 +39,12 @@ module.exports = function(app){
   });
   
   
-  app.get('/word', function(req, res) {
+  app.get('/word', app.connectDb, function(req, res) {
     res.redirect('/word/list');
   });
   
-  app.get('/word/list', function(req, res) {
-    WordHandler.getAll(function(error, words) {
+  app.get('/word/list', app.connectDb, function(req, res) {
+    WordHandler.getAll(req.db, function(error, words) {
       if (error) {
         req.flash('error', "Error: " + util.inspect(error));
         res.redirect('back');
@@ -63,7 +62,7 @@ module.exports = function(app){
   });
   
   
-  app.get('/word/add', function(req, res) {
+  app.get('/word/add', app.connectDb, function(req, res) {
     res.render('word/form', {
       locals: {
         word: new WordHandler(),    // empty
@@ -80,7 +79,7 @@ module.exports = function(app){
 
   
   
-  app.get('/word/:word/edit', function(req, res) {
+  app.get('/word/:word/edit', app.connectDb, function(req, res) {
     res.render('word/form', {
       locals: {
         word: req.word,   // from app.param()
@@ -104,7 +103,7 @@ module.exports = function(app){
   
 
   // after all the fixed /word/X, assume X is an ID.
-  app.get('/word/:word', function(req, res) {
+  app.get('/word/:word', app.connectDb, function(req, res) {
     // 'list' view includes styles, 'word' is a partial.
     res.render('word/list', {
       locals: {
@@ -118,7 +117,7 @@ module.exports = function(app){
   
   // save a new or updated word (or return to form if validation failed.)
   // using POST for create & update; some use PUT, seems controversial/not that important.
-  app.post('/word/:word?', function(req, res) {
+  app.post('/word/:word?', app.connectDb, function(req, res) {
     console.log('params:', req.body);
 
     // start w/ empty, or existing.
@@ -144,7 +143,7 @@ module.exports = function(app){
         return res.redirect('back');
       }
       
-      updatedWord.save(function(error){
+      updatedWord.save(req.db, function(error){
         if (error) {
           console.log("Error on save: %j", error);
           return next(error);    // ??
@@ -158,9 +157,9 @@ module.exports = function(app){
   });
   
   
-  app.get('/word/:word/delete', function(req, res) {
+  app.get('/word/:word/delete', app.connectDb, function(req, res) {
     console.log('deleting:', req.word);
-    WordHandler.remove(req.word._id, function(error) {
+    WordHandler.remove(req.db, req.word._id, function(error) {
       if (error) {
         req.flash('error', error.message);
         return res.redirect('back');

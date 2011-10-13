@@ -67,6 +67,27 @@ app.configure(function(){
 // });
 
 
+// middleware to get a DB connection.
+// assign a DB connection to the request, or fail.
+// this requires that req.db be passed to every function/handler needing a database connection.
+app.connectDb = function(req, res, next) {
+  var mongoHandler = require('./db/mongodb.js');
+
+  req.db = new mongoHandler('flashcards', function(error){
+    if (error) {
+      req.flash('error', "Unable to connect to database.");
+      res.render('home', {
+        locals: {
+          pageTitle : ''
+        }
+      });
+    }
+    else {
+      next();
+    }
+  });
+};
+
 
 // Routes
 

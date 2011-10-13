@@ -15,10 +15,13 @@ var BSON = require('mongodb').BSONPure;
 
 
 // constructor + export. (are all the intermediaries necessary?)
-var MongoHandler = exports = module.exports = function(dbName) {
+var MongoHandler = exports = module.exports = function(dbName, callback) {
   this.mongo = new mongodb.Server('localhost', mongodb.Connection.DEFAULT_PORT, { auto_reconnect:true });
   this.db = new mongodb.Db(dbName, this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
-  this.db.open(function(){}); //?
+  this.db.open(function(error, db){
+    if (error) callback(error);
+    else callback(null);   // ??
+  });
 };
 
 

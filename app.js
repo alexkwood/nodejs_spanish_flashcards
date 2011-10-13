@@ -21,6 +21,7 @@ global.wordLanguages = {
 // remember the app route dir [is there a built-in var for this??]
 app.baseDir = __dirname;
 
+app.config = require('./config.js').config;
 
 // [what's the difference between putting here or inside app.configure() ??]
 app.set('views', __dirname + '/views');

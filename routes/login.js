@@ -1,69 +1,53 @@
 // Login form handling
 
-var _ = require('underscore')._,
-  fs = require('fs'),
-  path = require('path');
+var _ = require('underscore')._;
 
 module.exports = function(app){
 
-  var passwordFilePath = app.baseDir + '/PASSWORD';
-
   app.get('/login', function(req, res){
-    
-    // if no password file, say so.
-    path.exists(passwordFilePath, function (exists) {
-      if (! exists) req.flash('error', "Password file does not exist. Create one to log in. (See README.)");
-      
-      res.render('login', {
-        locals: {
-          pageTitle : 'Login'
-        }
-      });
-      
+    res.render('login', {
+      locals: {
+        pageTitle : 'Login'
+      }
     });
-    
   });
 
 
+  // password entered
   app.post('/login', function(req, res){
-    if (_.isUndefined(req.body.password)) {
-      req.flash('error', 'No password entered.');
+    
+    // use error catcher for multiple messages
+    try {
+      if (_.isUndefined(app.config.password)) {
+        throw new Error("No password set in config.js");
+      }
+      
+      else if (_.isUndefined(req.body.password)) {
+        throw( new Error('No password entered.') );
+      }
+      
+      else if (app.config.password === req.body.password) {
+        req.session.regenerate(function(error){
+          if (error) throw new Error("Unable to create session");
+          else {
+            // == only outcome here that isn't an error ==
+            req.session.loggedIn = true;
+            req.flash('info', 'Logged in!');
+            res.redirect('/');
+          }
+        });
+      }
+      
+      else {
+        throw(new Error('Incorrect password'));
+      }      
+    }
+    catch(e) {
+      req.flash('error', e.message);    // "Unable to read password file."
       res.redirect('back');
     }
-    else {      
-      fs.readFile(passwordFilePath, 'utf-8', function(error, password) {
-        try {
-          if (error) {
-            throw new Error("Unable to read password file.");
-          }
-          else {
-            password = password.trim();
-            // req.flash('debug', "Password is: " + password);
-            
-            if (password === req.body.password) {
-              req.session.regenerate(function(error){
-                if (error) throw new Error("Unable to create session");
-                else {
-                  req.session.loggedIn = true;
-                  req.flash('info', 'Logged in!');
-                  res.redirect('/');
-                }
-              });
-            }
-            else {
-              req.flash('error', 'Incorrect password');
-              res.redirect('back');
-            }
-          }
-        }
-        catch(e) {
-          req.flash('error', e.message);    // "Unable to read password file."
-          res.redirect('/');
-        }
-      });
-    }
-
-  });
+  }); //post
+  
   
   
   app.get('/logout', function(req, res) {

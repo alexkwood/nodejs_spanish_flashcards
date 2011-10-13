@@ -1,16 +1,27 @@
 // Login form handling
 
-var _ = require('underscore')._;
-var fs = require('fs');
+var _ = require('underscore')._,
+  fs = require('fs'),
+  path = require('path');
+
+var passwordFilePath = './PASSWORD';
 
 module.exports = function(app){
 
   app.get('/login', function(req, res){
-    res.render('login', {
-      locals: {
-        pageTitle : 'Login'
-      }
+    
+    // if no password file, say so.
+    path.exists(passwordFilePath, function (exists) {
+      if (! exists) req.flash('error', "Password file does not exist. Create one to log in. (See README.)");
+      
+      res.render('login', {
+        locals: {
+          pageTitle : 'Login'
+        }
+      });
+      
     });
+    
   });
 
 
@@ -20,7 +31,7 @@ module.exports = function(app){
       res.redirect('back');
     }
     else {      
-      fs.readFile('./PASSWORD', 'utf-8', function(error, password) {
+      fs.readFile(passwordFilePath, 'utf-8', function(error, password) {
         try {
           if (error) {
             throw new Error("Unable to read password file.");

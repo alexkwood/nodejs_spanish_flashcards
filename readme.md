@@ -3,7 +3,9 @@
 
 This is a little app to help me learn two things at once: node.js (and its surrounding ecosystem) and Spanish.
 
-Modify the 'PASSWORD' file to set the login password.
+To run:
+# Create a PASSWORD file in the root to set the login password. (Otherwise won't allow access.)
+# Run the app (`node app.js`)
 
 
 (Follow my travels in Argentina at [http://steph-and-ben.blogspot.com](http://steph-and-ben.blogspot.com)

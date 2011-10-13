@@ -42,12 +42,16 @@ app.dynamicHelpers({
       if (parts.length == 0) return 'home';
       return parts.join('-');
   }
+  
+  , isLoggedIn: function(req, res) {
+    return app.isLoggedIn(req);
+  }
 });
 
 // Configuration
 app.configure(function(){
-  app.use(express.bodyParser());   // [doesn't work w/ 'forms' module. not using anymore.]
-  app.use(express.methodOverride());
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());    // necessary?
   app.use(express.cookieParser());
   app.use(express.session({ secret: 'quien es' }));
   app.use(app.router);
@@ -55,6 +59,7 @@ app.configure(function(){
 
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
 });
+
 
 
 // per-environment config
@@ -67,7 +72,7 @@ app.configure(function(){
 // });
 
 
-// middleware to get a DB connection.
+// route middleware to get a DB connection.
 // assign a DB connection to the request, or fail.
 // this requires that req.db be passed to every function/handler needing a database connection.
 app.connectDb = function(req, res, next) {
@@ -89,9 +94,29 @@ app.connectDb = function(req, res, next) {
 };
 
 
+// check if user is logged in [used in multiple places]
+app.isLoggedIn = function(req) {
+  var _ = require('underscore')._;
+  return (! _.isUndefined(req.session.loggedIn));
+};
+
+// route middleware to authenticate user.
+app.restrictUser = function(req, res, next) {
+  // if (!_.isUndefined(req.session.loggedIn)) {
+  if (app.isLoggedIn(req)) {
+    next();   // logged in
+  }
+  else {
+    req.flash('error', "Please login to do that.");
+    res.redirect('/login');
+  }
+};
+
+
 // Routes
 
 // delegate routers w/ closures
+require('./routes/login.js')(app);
 require('./routes/home.js')(app);
 require('./routes/word.js')(app);
 require('./routes/play.js')(app);

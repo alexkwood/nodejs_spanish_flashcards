@@ -6,4 +6,8 @@ ul#nav
     a(href='/play') Play
   li.last
     a(href='/word/add') Add
-  
+
+- if (isLoggedIn)
+  a.logout(href="/logout") Logout
+- else
+  a.login(href="/login") Login

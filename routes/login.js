@@ -4,15 +4,15 @@ var _ = require('underscore')._,
   fs = require('fs'),
   path = require('path');
 
-var passwordFilePath = './PASSWORD';
-
 module.exports = function(app){
+
+  var passwordFilePath = app.baseDir + '/PASSWORD';
 
   app.get('/login', function(req, res){
     
     // if no password file, say so.
     path.exists(passwordFilePath, function (exists) {
-      if (! exists) req.flash('error', "Password file (" + path.resolve(passwordFilePath) + ") does not exist. Create one to log in. (See README.)");
+      if (! exists) req.flash('error', "Password file does not exist. Create one to log in. (See README.)");
       
       res.render('login', {
         locals: {

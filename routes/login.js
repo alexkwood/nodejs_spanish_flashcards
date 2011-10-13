@@ -12,7 +12,7 @@ module.exports = function(app){
     
     // if no password file, say so.
     path.exists(passwordFilePath, function (exists) {
-      if (! exists) req.flash('error', "Password file does not exist. Create one to log in. (See README.)");
+      if (! exists) req.flash('error', "Password file (" + path.resolve(passwordFilePath) + ") does not exist. Create one to log in. (See README.)");
       
       res.render('login', {
         locals: {

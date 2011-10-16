@@ -18,7 +18,7 @@ a {
 }
 
 
-form#add-word {
+form#add-word, form#lookup-word {
   * {
     font-size: 1.2em;
   }
@@ -36,6 +36,22 @@ form#add-word {
   input.submit {
     float: left;
     clear: both;
+  }
+}
+
+
+form#lookup-word {
+  float: left;
+  clear: both;
+  width: 100%;
+  border-bottom: solid #999 1px;
+  margin-bottom: 1em;
+
+  label {
+    font-size: 1.1em;
+  }
+  .field.missing {
+    font-size: .7em;
   }
 }
 
@@ -71,7 +87,7 @@ body.home #nav {
 }
 
 
-ul.words {
+ul.words, ul.definitions, ul.compounds {
   float: left;
   width: 100%;
   .clearlist;
@@ -108,6 +124,15 @@ ul.words {
     a {
       margin-right: 1em;
     }
+  }
+}
+
+
+body.lookup {
+  h3 {
+    margin-top: 1em;
+    /*float: left;*/
+    clear: both;
   }
 }
 

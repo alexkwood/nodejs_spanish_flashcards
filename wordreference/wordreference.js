@@ -1,7 +1,8 @@
 /** module for WordReference API integration **/
 
-var http = require('http');
-var _ = require('underscore')._;
+var http = require('http'),
+    _ = require('underscore')._,
+    util = require('util');
 
 /*
 == TOS (http://www.wordreference.com/docs/api.aspx) ==
@@ -42,12 +43,17 @@ WR.prototype.url = function(dictionary, term) {
 };
 
 
+// query the API and return a raw response object (via callback)
 WR.prototype.query = function(dictionary, term, callback) {
   var url = this.url(dictionary, term);
   
   var options = _.extend(url, {
-    'method': 'GET'
-    // can add headers, agent, etc
+    'method': 'GET',
+    'headers': {
+      'User-Agent': 'Spanish Flashcards',   // API returns error w/o this
+      'Content-type': 'text/json'           // ?
+      // 'Connection': 'keep-alive',
+    }
   });
 
   // console.log('querying url:', url, 'with options:', options);
@@ -55,36 +61,87 @@ WR.prototype.query = function(dictionary, term, callback) {
   var bodyParts = [];
   
   var req = http.request(options, function(res){
-    console.log("Got WR response");
+    console.log("Got WR response, code:", res.statusCode);
     
     res.setEncoding('utf8');
     
     res.on('data', function (chunk) {
       bodyParts.push(chunk);
-      console.log('added body chunk');
+      // console.log('added body chunk');
     });
     
     res.on('end', function() {
-      // == pass result back to server response here ==
-      console.log('response END, callback.');
-      console.log('have', bodyParts.length, 'body parts');
-      
+      // == pass result back to server response here ==      
       try {
         var body = bodyParts.join('');
         var data = JSON.parse(body);
-        callback(null, data);
       }
       catch(e) {
-        console.log('error parsing json');
-        callback(e, body);
+        console.log('error parsing json', e);
+        return callback(e, body);
       }
+      
+      return callback(null, data);
     });
   })
   .on('error', function(e) {
     console.log('http request error!', e);
-    req.end();    //??
     callback(e);
   })
   .end();
 
+};  //query()
+
+
+// take the json object returned from API and parse it for the lookup results.
+// (sync)
+WR.prototype.parse = function(result) {
+  var out = {
+    definitions: [],
+    compounds: [],
+    raw: ''
+  },
+  termCount,
+  pointer;
+  
+  // out.raw = 'Result: ' + '<br/>' + '<pre>' + util.inspect(result, true, null) + '</pre>' + '<br/><br/>';
+
+  try {
+    if (! _.isUndefined(result.original.Compounds)) {
+      out.compounds = _.toArray(result.original.Compounds);
+    }
+  } catch(e) {}
+  
+  try {
+    for(termCount = 0; ; termCount++) {
+      if (! _.isUndefined(result['term' + termCount])) {
+        // out.raw += "Found term " + termCount + "<br/>";
+
+        pointer = result['term' + termCount];
+        
+        _(['PrincipalTranslations', 'AdditionalTranslations']).each(function(t1) {
+
+          if (! _.isUndefined( pointer[t1] )) {
+            _.each(pointer[t1], function(t) {    // 0,1,etc
+
+              _(['FirstTranslation', 'SecondTranslation', 'ThirdTranslation']).each(function(t2) {
+                if (!_.isUndefined( t[t2] )) {
+                  out.definitions.push( t[t2] );
+                }
+              });
+
+            });          
+          }
+          
+        });
+        
+      }
+      else break;
+    }
+    
+  } catch(e) {}
+
+  // out.raw += 'Translations: ' + '<pre>' + util.inspect(out.definitions, true, null) + '</pre><br/><br/>';
+  
+  return out;
 };

@@ -110,10 +110,10 @@ app.isLoggedIn = function(req) {
 
 // route middleware to authenticate user.
 app.restrictUser = function(req, res, next) {
-  req.flash("TEMPORARILY GRANTING ANY ACCESS");
-  next();     // TEMP!!!
-  return;
-  
+  // == FOR TESTING ==
+  // req.flash('warning', "TEMPORARILY GRANTING ANY ACCESS");
+  // next();     // TEMP!!!
+  // return;  
   
   // if (!_.isUndefined(req.session.loggedIn)) {
   if (app.isLoggedIn(req)) {

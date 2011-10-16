@@ -63,9 +63,16 @@ module.exports = function(app){
   
   
   app.get('/word/add', app.restrictUser, app.connectDb, function(req, res) {
+    var word = new WordHandler();   //empty
+    
+    // prepopulate from querystring? (used from /lookup results)
+    if (!_.isUndefined(req.query.word_es) || !_.isUndefined(req.query.word_en)) {
+      word = new WordHandler(req.query);
+    }
+    
     res.render('word/form', {
       locals: {
-        word: new WordHandler(),    // empty
+        word: word,
         pageTitle: 'Add a Word',
         action: '/word',
         

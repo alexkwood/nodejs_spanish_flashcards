@@ -21,4 +21,6 @@ $(function(){
   if ($('form#login').size()) {
     $('form#login').find('input.password').focus();
   }
+
+  
 });

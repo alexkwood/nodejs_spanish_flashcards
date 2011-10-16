@@ -1,15 +1,13 @@
 // Spanish Flashcards app -- learning node.js & express.js with mongodb
 
-// @todo figure out which of these are really necessary
 var express = require('express')
     , app = module.exports = express.createServer()
     , messages = require('./messages')   // [modified from lib]
-    //, sys = require('sys')
     , _ = require('underscore')._
     ;
 
-// [quasi] models
-// require('./models/word');
+// remember the app route dir [is there a built-in var for this??]
+app.baseDir = __dirname;
 
 global.appTitle = 'Ben\'s Spanish Flashcards';
 
@@ -17,9 +15,6 @@ global.wordLanguages = {
   "en": "English",
   "es": "Spanish"
 };
-
-// remember the app route dir [is there a built-in var for this??]
-app.baseDir = __dirname;
 
 try {
   app.config = require('./config.js').config;
@@ -75,8 +70,6 @@ app.configure(function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
 });
 
-
-
 // per-environment config
 // app.configure('development', function(){
 //   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
@@ -117,6 +110,11 @@ app.isLoggedIn = function(req) {
 
 // route middleware to authenticate user.
 app.restrictUser = function(req, res, next) {
+  req.flash("TEMPORARILY GRANTING ANY ACCESS");
+  next();     // TEMP!!!
+  return;
+  
+  
   // if (!_.isUndefined(req.session.loggedIn)) {
   if (app.isLoggedIn(req)) {
     next();   // logged in
@@ -135,6 +133,7 @@ require('./routes/login.js')(app);
 require('./routes/home.js')(app);
 require('./routes/word.js')(app);
 require('./routes/play.js')(app);
+require('./routes/lookup.js')(app);
 
 
 if (!module.parent) {

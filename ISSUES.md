@@ -63,3 +63,5 @@
 
 * where/when should the db handler be created? if at start of module, has no response object to pass errors to!
   -- solved w/ connectDb middleware before each request.
+* single DB connection for app, or for each request? mongo-connect (session store) seems to want an app-wide connection.
+

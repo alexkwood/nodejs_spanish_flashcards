@@ -5,8 +5,6 @@
    add functions to prototype -- need to instantiate a controller to use.
    
    convention for 'callback' -- takes error (null on success) + results
-   
-   @todo handle DB outage more gracefully. timeout on connection?   
 */
 
 var _ = require('underscore')._;
@@ -15,21 +13,35 @@ var BSON = require('mongodb').BSONPure;
 
 
 // constructor + export. (are all the intermediaries necessary?)
-var MongoHandler = exports = module.exports = function(dbName, callback) {
-  this.mongo = new mongodb.Server('localhost', mongodb.Connection.DEFAULT_PORT, { auto_reconnect:true });
-  this.db = new mongodb.Db(dbName, this.mongo, { native_parser:false, strict:true }); // crashes w/ strict off!
-  this.db.open(function(error, db){
-    if (error) callback(error);
-    else callback(null);   // ??
-  });
+var MongoHandler = exports = module.exports = function(dbName) {
+  this.mongo = new mongodb.Server('localhost', mongodb.Connection.DEFAULT_PORT, { auto_reconnect:true, native_parser:false });
+  this.db = new mongodb.Db(dbName, this.mongo, { strict:false }); // was crashing w/ strict off... but session store assumes on!
 };
 
+// not sure if this makes sense. is open() even necessary?
+// triggered in app.connectDb() middleware.
+// connect-mongo sessions store uses same db connection but opens it separately...?
+MongoHandler.prototype.open = function(callback) {
+  // already opened? w/connect-mongo, seems to be.
+  if (this.db.state == 'connected') {
+    callback(null);
+  }
+  else {
+    this.db.open(function(error, db){
+      if (error) callback(error);
+      else {
+        callback(null);
+      }
+    });    
+  }
+};
 
 MongoHandler.prototype.getCollection = function(collectionName, callback) {
   var db = this.db;   // otherwise gets lost ... figure out why!
   db.collection(collectionName, function(error, collection) {
     if (error) {
       // don't fail just yet -- try to CREATE the collection in case it doesn't exist.
+      // [only necessary when strict mode is ON.]
       db.createCollection(collectionName, function(error, collection){
         if (error) return callback(error);
         else callback(null, collection);

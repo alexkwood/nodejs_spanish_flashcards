@@ -51,11 +51,11 @@ MongoHandler.prototype.getCollection = function(collectionName, callback) {
   });
 };
 
-MongoHandler.prototype.getAllDocuments = function(collectionName, callback) {
+MongoHandler.prototype.getDocuments = function(collectionName, query, callback) {
   this.getCollection(collectionName, function(error, collection) {
     if (error) return callback(error);
     else {
-      collection.find(function(error, cursor) {
+      collection.find(query, function(error, cursor) {
         if (error) return callback(error);
         else {
           cursor.toArray(function(error, results) {
@@ -71,6 +71,8 @@ MongoHandler.prototype.getAllDocuments = function(collectionName, callback) {
 
 // doc should be a modeled object
 MongoHandler.prototype.save = function(collectionName, doc, callback) {
+  // console.log('about to save doc:', doc);
+  
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) return callback(error);
 
@@ -159,4 +161,12 @@ MongoHandler.prototype.objectID = function(id) {
   catch(e) {
     return id;
   }
+};
+
+
+MongoHandler.prototype.distinct = function(collectionName, key, query, callback) {
+  var collection = this.getCollection(collectionName, function(error, collection) {
+    if (error) callback(error);
+    else collection.distinct(key, query, callback);
+  });
 };

@@ -22,5 +22,19 @@ $(function(){
     $('form#login').find('input.password').focus();
   }
 
+
+  if ($('form#add-word').size()) {
+    var toggleNewGroup = function() {
+      if ($('form#add-word select#group').val() == 'new') {
+        $('form#add-word input#new_group').show();
+      }
+      else {
+        $('form#add-word input#new_group').hide();
+      }
+    };
+    
+    $('form#add-word select#group').bind('change', toggleNewGroup);
+    toggleNewGroup();
+  }
   
 });

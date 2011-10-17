@@ -11,6 +11,15 @@ div.english
 div.type
   span.label type
   span!= word.getType()
+  
+div.group
+  - if (word.group != '' && word.group != null)
+      span.label Group
+      span
+        a(href='/word/list?group=#{word.group}')!= word.group
+  - else
+      span.label
+      span
 
 - if (typeof showWordLinks != 'undefined' && showWordLinks == true)
   div.links

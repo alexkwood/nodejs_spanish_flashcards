@@ -43,8 +43,19 @@ module.exports = function(app){
     res.redirect('/word/list');
   });
   
+
   app.get('/word/list', app.restrictUser, app.connectDb, function(req, res) {
-    WordHandler.getAll(req.db, function(error, words) {
+    
+    var query = {};
+    var pageTitle = 'List';
+    
+    // filters?
+    if (!_.isUndefined(req.query.group)) {
+      query = { 'group': req.query.group };
+      pageTitle = 'Words in group &quot;' + req.query.group + '&quot;';
+    }
+    
+    WordHandler.getWords(req.db, query, function(error, words) {
       if (error) {
         req.flash('error', "Error: " + util.inspect(error));
         res.redirect('back');
@@ -53,7 +64,7 @@ module.exports = function(app){
         // console.log('words:', words);
         
         res.render('word/list', {
-          pageTitle: 'List',
+          pageTitle: pageTitle,
           words: words,
           showWordLinks: true
         });
@@ -70,40 +81,58 @@ module.exports = function(app){
       word = new WordHandler(req.query);
     }
     
-    res.render('word/form', {
-      locals: {
-        word: word,
-        pageTitle: 'Add a Word',
-        action: '/word',
-        
-        // for dropdown
-        types: _.map(WordHandler.getTypes(), function(value, key) {
-          return { key: key, value: value, selected: false };
-        })
-      }
+    // get groups. what's a better way to structure this? (seems silly to nest the whole form inside this.)
+    WordHandler.getGroups(req.db, function(error, groups) {
+      if (error) groups = [];
+      
+      res.render('word/form', {
+        locals: {
+          word: word,
+          pageTitle: 'Add a Word',
+          action: '/word',
+
+          // for dropdown
+          types: _.map(WordHandler.getTypes(), function(value, key) {
+            return { key: key, value: value, selected: false };
+          }),
+          
+          groups: groups
+        }
+      });
+      
     });
   });
 
   
   
   app.get('/word/:word/edit', app.restrictUser, app.connectDb, function(req, res) {
-    res.render('word/form', {
-      locals: {
-        word: req.word,   // from app.param()
-        
-        action: '/word/' + req.word._id,
-        
-        pageTitle: 'Edit Word',
-        
-        // for dropdown
-        types: _.map(WordHandler.getTypes(), function(value, key) {
-          return { 
-            key: key,
-            value: value,
-            selected: (req.word.type == key)
-          };
-        })
-      }
+    
+    WordHandler.getGroups(req.db, function(error, groups) {
+      if (error) groups = [];
+    
+      res.render('word/form', {
+        locals: {
+          word: req.word,   // from app.param()
+      
+          action: '/word/' + req.word._id,
+      
+          pageTitle: 'Edit Word',
+      
+          // for dropdown
+          types: _.map(WordHandler.getTypes(), function(value, key) {
+            return { 
+              key: key,
+              value: value,
+              selected: (req.word.type == key)
+            };
+          }),
+          
+          groups: _.map(groups, function(value) {
+            return { key: value, value: value, selected: (req.word.group == value) };
+          })
+        }
+      });
+      
     });
     
   });
@@ -132,7 +161,7 @@ module.exports = function(app){
       var originalWord = new WordHandler();
     }
     else {
-      var originalWord = req.word;      
+      var originalWord = req.word;
     }
 
     // pull new values from POST request (only partial).
@@ -142,6 +171,10 @@ module.exports = function(app){
     updatedWord = _.extend(originalWord, updatedWord);
     console.log('original word:', originalWord);
     console.log('updated word:', updatedWord);
+    
+    // map to model. cleans up new_group, etc.
+    updatedWord = new WordHandler(updatedWord);
+    console.log('modeled word:', updatedWord);
     
     // save if validates.
     updatedWord.validate(function(error) {

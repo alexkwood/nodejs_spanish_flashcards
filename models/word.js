@@ -17,13 +17,23 @@ var Word = exports = module.exports = function(word) {
       word_en: '',
       type: '',
       
+      group: null,
+      
       // should these be here, or only handled on save?
       created: null,    //new Date(),
       updated: null
     },
     word);
+    
+  // new group? (from form)
+  if (!_.isUndefined(this.new_group)) {
+    if (!_.isEmpty(this.new_group)) {
+      this.group = this.new_group;      
+    }
+    delete this.new_group;
+  }
   
-  // return word;
+  // console.log('modeled new word:', this);  
 };
 
 
@@ -68,6 +78,7 @@ Word.prototype.getType = function() {
   return this.type;
 };
 
+
 // @todo 'update' separate from 'save'?
 
 // Word.prototype.XXX = function() {
@@ -106,8 +117,8 @@ exports.getRandom = function(db, callback) {
   });
 };
 
-exports.getAll = function(db, callback) {
-  db.getAllDocuments(collectionName, function(error, words) {
+exports.getWords = function(db, query, callback) {
+  db.getDocuments(collectionName, query, function(error, words) {
     exports.mapWordsToModel(error, words, callback);
   });
 };
@@ -129,4 +140,9 @@ exports.getTypes = function() {
     'pro': 'pronoun',
     'phrase' : 'phrase'
   };
+};
+
+// get the existing 'group' values
+exports.getGroups = function(db, callback) {
+  db.distinct(collectionName, 'group', {}, callback);
 };

@@ -16,6 +16,16 @@ form#add-word(method='post', action=action)
       option(value='') -
       - each type in types
         option(value=type.key, selected=type.selected)= type.value
-  
+
+  div.field
+    label Special Group
+    select(name='group', id='group')
+      option(value='')
+      - each group in groups
+        option(value=group.key, selected=group.selected)!= group.value
+      option(value='new') -new-
+      
+    input(name='new_group', id='new_group')
+      
   div.field
     input(type='submit', value=word._id ? 'Update' : 'Create')

@@ -21,9 +21,6 @@
 * what's the proper way to set global app variables that get inherited by exported modules?
   - or is there something better than require() for sub-files?
 
-* ObjectID.createFromHexString() doesn't work -- how to query mongodb by ID?
-  - BSON.ObjectID()
-
 * what's the best way to pass an _id for editing? hidden field seems clunky.
 
 * on mongodb save/update, update() returns no result in callback, is it safe to assume success?
@@ -32,8 +29,6 @@
 
 ## todo
 
-* auth
-
 * replace less.js with compiler plugin in Connect: http://senchalabs.github.com/connect/middleware-compiler.html
 
 * on remove(), how to handle both ObjectID and other ID types?
@@ -41,9 +36,6 @@
 * convert callback() calls to `return callback()` to eliminate else{}
 
 ----
-
-* "console.dir() is an alias for util.inspect()"
-  - also use other params of util.inspect() -- util.inspect(object, showHidden=false, depth=2, colorize=true);
 
 * debug app according to http://docs.nodejitsu.com/articles/getting-started/how-to-debug-nodejs-applications
 

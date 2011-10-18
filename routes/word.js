@@ -41,7 +41,7 @@ module.exports = function(app){
 
   // process :word param when passed
   // [how does connectDb middleware work here?]
-  app.param('word', app.restrictUser, app.connectDb, function(req, res, next, id){
+  app.param('word', /*app.restrictUser,*/ app.connectDb, function(req, res, next, id){
     WordHandler.getById(req.db, id, function(error, word) {
       if (error) {
         
@@ -59,12 +59,12 @@ module.exports = function(app){
   });
   
   
-  app.get('/word', app.restrictUser, app.connectDb, function(req, res) {
+  app.get('/word', /*app.restrictUser,*/ app.connectDb, function(req, res) {
     res.redirect('/word/list');
   });
   
 
-  app.get('/word/list', app.restrictUser, app.connectDb, function(req, res) {
+  app.get('/word/list', /*app.restrictUser,*/ app.connectDb, function(req, res) {
     
     var query = {};
     var pageTitle = 'List';
@@ -159,7 +159,7 @@ module.exports = function(app){
   
 
   // after all the fixed /word/X, assume X is an ID.
-  app.get('/word/:word', app.restrictUser, app.connectDb, function(req, res) {
+  app.get('/word/:word', /*app.restrictUser,*/ app.connectDb, function(req, res) {
     // 'list' view includes styles, 'word' is a partial.
     res.render('word/list', {
       locals: {

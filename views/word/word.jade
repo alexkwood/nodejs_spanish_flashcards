@@ -24,5 +24,6 @@ div.group
 - if (typeof showWordLinks != 'undefined' && showWordLinks == true)
   div.links
     a.perma(href='/word/#{word._id}') link
-    a.edit(href='/word/#{word._id}/edit') edit
-    a.delete(href='/word/#{word._id}/delete') delete
+    - if (isLoggedIn)
+      a.edit(href='/word/#{word._id}/edit') edit
+      a.delete(href='/word/#{word._id}/delete') delete

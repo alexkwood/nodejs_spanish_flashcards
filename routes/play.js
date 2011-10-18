@@ -8,7 +8,7 @@ var _ = require('underscore')._;
 // app passed as closure
 module.exports = function(app){
   
-  app.get('/play', app.restrictUser, app.connectDb, function(req, res) {
+  app.get('/play', /*app.restrictUser,*/ app.connectDb, function(req, res) {
 
     // word shown can be in either language
     var langCodes = _.keys(global.wordLanguages);    

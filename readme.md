@@ -4,8 +4,9 @@
 This is a little app to help me learn two things at once: node.js (and its surrounding ecosystem) and Spanish.
 
 To run:
-- Create a config.js file in the root. See example.config.js.
-- Run the app (`node app.js`)
+
+* Create a config.js file in the root. See example.config.js.
+* Run the app (`node app.js`)
 
 Post about this app and lessons learned from coding it is (here)[http://benbuckman.net/tech/11/10/exploring-nodejs-frontier].
 Follow my travels in Argentina at [http://steph-and-ben.blogspot.com](http://steph-and-ben.blogspot.com)

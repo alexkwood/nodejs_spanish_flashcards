@@ -8,6 +8,6 @@ To run:
 * Create a config.js file in the root. See example.config.js.
 * Run the app (`node app.js`)
 
-Post about this app and lessons learned from coding it is (here)[http://benbuckman.net/tech/11/10/exploring-nodejs-frontier].
+Post about this app and lessons learned from coding it is [here](http://benbuckman.net/tech/11/10/exploring-nodejs-frontier).
 Follow my travels in Argentina at [http://steph-and-ben.blogspot.com](http://steph-and-ben.blogspot.com)
 and my tech blog at [http://tech.benbuckman.net](http://tech.benbuckman.net). 

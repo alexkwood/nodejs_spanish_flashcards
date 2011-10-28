@@ -6,15 +6,19 @@ var express = require('express')
   , messages = require('./messages')   // [modified from lib]
   , _ = require('underscore')._
 
+  , args = require("argsparser").parse()
+  ;
+
+// allow --db arg to override name of db
+var dbName = _.isUndefined(args['--db']) ? 'flashcards' : args['--db'];
+
   // general DB
-  , MongoHandler = require('./db/mongodb.js')
-  , mongoHandler = new MongoHandler('flashcards')
+var MongoHandler = require('./db/mongodb.js')
+  , mongoHandler = new MongoHandler(dbName)
 
   // for sessions
   , MongoStore = require('connect-mongodb')
-  , sessionStore = new MongoStore({db: mongoHandler.db, reapInterval: 3000, collection: 'sessions'})
-  
-  , args = require("argsparser").parse()
+  , sessionStore = new MongoStore({db: mongoHandler.db, reapInterval: 3000, collection: 'sessions'})  
   ;
 
 // remember the app route dir [is there a built-in var for this??]

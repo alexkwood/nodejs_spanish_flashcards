@@ -155,10 +155,15 @@ require('./routes/lookup.js')(app);
 
 // optionally set port and hostname with args,
 // e.g. node app.js --host HOST --port PORT
-var port = _.isUndefined(args['--port']) ? 3000 : args['--port'];
-var host = _.isUndefined(args['--host']) ? null : args['--host'];
+var port = _.isUndefined(args['--port']) ? 3000 : args['--port'];     // number
+var host = _.isUndefined(args['--host']) ? null : args['--host'];     // IP address (not host NAME)
+
+// try to limit to host NAME -- this doesn't work, suggestions welcome.
+// if (! _.isUndefined(args['--vhost'])) {
+//   app.use( express.vhost( args['--vhost'], app ) ).listen(port, host);    
+// }
 
 if (!module.parent) {
-  app.listen(port, host);
+  app.listen(port, host);      
   console.log("Express server listening to %s on port %d in %s mode", app.address().address, app.address().port, app.settings.env);  
 }

@@ -9,7 +9,7 @@ To run:
 * Run the app (`node app.js`)
 
 
-You can run **multiple instances** of the app with the --db, --host, and --port parameters.
+You can run **multiple instances** of the app with different --db and --port parameters.
 
 
 Post about this app and lessons learned from coding it is [here](http://benbuckman.net/tech/11/10/exploring-nodejs-frontier).

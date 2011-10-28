@@ -13,6 +13,8 @@ var express = require('express')
   // for sessions
   , MongoStore = require('connect-mongodb')
   , sessionStore = new MongoStore({db: mongoHandler.db, reapInterval: 3000, collection: 'sessions'})
+  
+  , args = require("argsparser").parse()
   ;
 
 // remember the app route dir [is there a built-in var for this??]
@@ -147,7 +149,12 @@ require('./routes/play.js')(app);
 require('./routes/lookup.js')(app);
 
 
+// optionally set port and hostname with args,
+// e.g. node app.js --host HOST --port PORT
+var port = _.isUndefined(args['--port']) ? 3000 : args['--port'];
+var host = _.isUndefined(args['--host']) ? null : args['--host'];
+
 if (!module.parent) {
-  app.listen(3000);
-  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);  
+  app.listen(port, host);
+  console.log("Express server listening to %s on port %d in %s mode", app.address().address, app.address().port, app.settings.env);  
 }

@@ -24,7 +24,7 @@ var MongoHandler = require('./db/mongodb.js')
 // remember the app route dir [is there a built-in var for this??]
 app.baseDir = __dirname;
 
-global.appTitle = "Ben's Spanish Flashcards";
+global.appTitle = _.isUndefined(args['--title']) ? "Ben's Spanish Flashcards" : args['--title'];
 
 global.wordLanguages = {
   "en": "English",

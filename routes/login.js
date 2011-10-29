@@ -27,15 +27,16 @@ module.exports = function(app){
       }
       
       else if (app.config.password === req.body.password) {
-        req.session.regenerate(function(error){
-          if (error) throw new Error("Unable to create session");
-          else {
+        // changed: don't regenerate the session. (e.g. if game in progress before logging in)
+        // req.session.regenerate(function(error){
+          // if (error) throw new Error("Unable to create session");
+          // else {
             // == only outcome here that isn't an error ==
             req.session.loggedIn = true;
             req.flash('info', 'Logged in!');
             res.redirect('/');
-          }
-        });
+          // }
+        // });
       }
       
       else {
@@ -51,10 +52,13 @@ module.exports = function(app){
   
   
   app.get('/logout', function(req, res) {
-    req.session.regenerate(function(){
+    // req.session.regenerate(function(){
+      // don't regenerate, want to keep some vars like words played.
+      delete req.session.loggedIn;
+      
       req.flash('info', 'Logged out.');
       res.redirect('/');
-    });
+    // });
   });
 
 };

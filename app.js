@@ -134,7 +134,8 @@ app.connectDb = function(req, res, next) {
 // check if user is logged in [used in multiple places]
 app.isLoggedIn = function(req) {
   var _ = require('underscore')._;
-  return (! _.isUndefined(req.session.loggedIn));
+  if (_.isUndefined(req.session.loggedIn)) return false;
+  return req.session.loggedIn;
 };
 
 // route middleware to authenticate user.

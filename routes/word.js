@@ -14,17 +14,20 @@ var WordHandler = require('../models/word.js');     // don't use 'Word' name to 
 var util = require('util');
 var _ = require('underscore')._;
 
-var events = require("events"),
-    emitter = new events.EventEmitter;
+// [was using, see comment below]
+// var events = require("events"),
+//     emitter = new events.EventEmitter;
 
 
 // app passed as closure
 module.exports = function(app){
 
   // load the groups & emit an event.
-  var getGroups = function(db, currentWord) {
+  var getGroups = function(db, currentWord, callback) {
     WordHandler.getGroups(db, function(error, groups) {
-      if (error) groups = [];
+      if (error) {
+        return callback(error);
+      }
 
       groups = _.map(groups, function(value) {
         map = { key: value, value: value, selected: false };
@@ -34,7 +37,7 @@ module.exports = function(app){
         return map;
       });
       
-      emitter.emit('groups:loaded', groups);
+      callback(null, groups);
     });
   };
   
@@ -101,10 +104,14 @@ module.exports = function(app){
       word = new WordHandler(req.query);
     }
     
-    // get groups. use EventEmitter instead of nesting.
-    // @todo learn how to wait for MULTIPLE events to trigger something!
-    emitter.on('groups:loaded', function(groups) {
-            
+    // get groups. was using EventEmitter here, but it kept throwing a "Can't use mutable header APIs after sent" error.
+    getGroups(req.db, {}, function(error, groups){
+      if (error) {
+        req.flash('error', "Unable to get groups. " + util.inspect(error));
+        res.render('home', { locals: { pageTitle : '' } });
+        return;
+      }
+      
       res.render('word/form', {
         locals: {
           word: word,
@@ -113,23 +120,30 @@ module.exports = function(app){
 
           // for dropdown
           types: _.map(WordHandler.getWordTypes(), function(value, key) {
-            return { key: key, value: value, selected: false };
+            return { 
+              key: key, 
+              value: value, 
+              selected: _.isUndefined(req.query.type) ? false : (req.query.type == key)
+            };
           }),
           
           groups: groups
         }
       });
     });
-    
-    getGroups(req.db, {});
   });
 
   
   
   app.get('/word/:word/edit', app.restrictUser, app.connectDb, function(req, res) {
     
-    emitter.on('groups:loaded', function(groups) {
-
+    getGroups(req.db, req.word, function(error, groups) {
+      if (error) {
+        req.flash('error', "Unable to get groups. " + util.inspect(error));
+        res.render('home', { locals: { pageTitle : '' } });
+        return;
+      }
+      
       res.render('word/form', {
         locals: {
           word: req.word,   // from app.param()
@@ -152,9 +166,6 @@ module.exports = function(app){
       });
       
     });
-    
-    getGroups(req.db, req.word);  
-    
   });
   
 

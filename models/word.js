@@ -110,10 +110,17 @@ exports.getById = function(db, id, callback) {
   });
 };
 
-exports.getRandom = function(db, callback) {
-  db.getRandom(collectionName, function(error, word) {
+// callback takes and passes back word + count
+exports.getRandom = function(db, query, callback) {
+  db.getRandom(collectionName, query, function(error, word, count) {
     if (error) callback(error);
-    else callback(null, new Word(word));
+    else if (count === 0) {    // no words left
+      callback(null, null, 0);
+    }
+    else {
+      // console.log("random word:", word);
+      callback(null, new Word(word), count);
+    }
   });
 };
 

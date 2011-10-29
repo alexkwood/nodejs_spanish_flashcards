@@ -1,9 +1,37 @@
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
 body {
   padding: 10px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-body > h1 {
+.rounded-corners (@radius: 10px) {
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+  border-radius: @radius;
+}
+
+#main {
+  width: 100%;
+  min-height: 85%;
+}
+
+#footer {
+  float: left;
+  width: 100%;
+  .clearlist;
+  font-size: .8em;
+  color: #999;
+  margin: 4em 0 0 0;
+  padding: 0 0 1em 0;
+  //border-top: dashed #999 1px;
+}
+
+#main > h1:first-child {
   margin-top: 0;
 }
 
@@ -67,16 +95,33 @@ ul#nav {
   li {
     float: left;
     margin-right: 10px;
+    
+    background-color: #ccc;
+    padding: 5px 8px;
+    margin-right: 1em;
+    .rounded-corners(5px);
+    
+    a {
+      color: #000;
+      font-weight: bold;
+      padding: 5px;
+      text-decoration: none;
+    }
+    
+  }
+
+  li.login, li.logout {
+    background: #ededed;
+
+    a.login, a.logout {
+      color: #888;
+    }
   }
   
   li.last {}
   
 }
 
-a.login, a.logout {
-  display: block;
-  float: right;
-}
 
 body.home #nav {
   font-size: 3em;
@@ -143,7 +188,9 @@ body.lookup {
 
 
 #play {
+  float: left;
   margin-bottom: 3em;
+  min-width: 650px;
 
   .question {
     font-size: 3em;
@@ -191,11 +238,34 @@ body.lookup {
       margin-top: 2em;
     }
   }
-  
+
+  div#show-wrapper {
+    margin: 2em 0 3em 0;
+    float: left;
+    clear: both;
+    width: 100%;
+  }
   a#show {
     display: block;
-    margin-top: 1em;
+    float: left;
+
     font-size: 2em;
+    
+    border: solid #ccc 4px;
+    .rounded-corners(20px);
+
+    background: #111;
+    color: #fff;
+    
+    padding: 10px 40px;
+    text-decoration: none;
+  }
+  
+  div.remaining {
+    float: left;
+    clear: left;
+    margin-top: 2em;
+    color: #666;
   }
 }
 
@@ -204,13 +274,39 @@ body.lookup {
  { display: none; }
 
 
-a#next {
+a.next-correct, a.next-incorrect {
+  display: block;
+  float: left;
   font-size: 1.5em;
+  color: #fff;
+  padding: 30px 100px;
+  margin-right: 30px;
+  text-decoration: none;
+  .rounded-corners(20px);
+}
+a.next-correct {
+  background-color: green;
+}
+a.next-incorrect {
+  background-color: red;
 }
 
+a.next-restart {
+  .rounded-corners(10px);
+  display: block;
+  float: left;
+  clear: both;
+  margin-top: 2em;
+  background: #000;
+  color: #fff;
+  padding: 10px;
+  text-decoration: none;
+}
 
 #messages {
-  border: dashed #999 1px;
+  border: solid #999 1px;
+  .rounded-corners(10px);
+  
   padding: 5px 5px 0 5px;
   margin: 0 0 2em 0;
   font-weight: bold;
@@ -239,14 +335,37 @@ a#next {
   }
 }
 
+div.gameover {
+  font-size: 4em;
+  .rounded-corners(20px);
+}
 
-#footer {
-  float: left;
-  width: 100%;
-  .clearlist;
-  font-size: .8em;
-  color: #999;
-  margin: 4em 0 0 0;
-  padding: .5em 0 1em 0;
-  /*border-top: dashed #999 1px;*/
+div#kb-legend {
+  display: none; /*toggled w/ JS*/
+  float: right;
+  border: solid #666 1px;
+  .rounded-corners(20px);
+  padding: 8px;
+  
+  h4 {
+    margin: 0 0 .5em 0;
+  }
+  
+  div {
+    float: left;
+    clear: both;
+    font-size: .8em;
+    color: #666;
+    padding-bottom: .5em;
+    
+    span {
+      display: block;
+      float: left;
+    }
+    span.key {
+      width: 70px;
+    }
+    span.does {
+    }
+  }
 }

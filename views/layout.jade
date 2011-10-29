@@ -14,17 +14,18 @@ html
       - })    
 
   body(class=bodyClass)
-    h1= appTitle
+    div#main
+      h1= appTitle
     
-    //- [sets the content of nav.jade to the block nav, can be overridden in child templates]
-    block nav
-      include includes/nav
+      //- [sets the content of nav.jade to the block nav, can be overridden in child templates]
+      block nav
+        include includes/nav
     
-      h2= pageTitle || ''
+        h2= pageTitle || ''
     
-    != messages()    
+      != messages()    
     
-    != body
+      != body
 
 
     div#footer 

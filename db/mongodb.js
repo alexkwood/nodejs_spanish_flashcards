@@ -93,14 +93,14 @@ MongoHandler.prototype.save = function(collectionName, doc, callback) {
 
 
 MongoHandler.prototype.getById = function(collectionName, id, callback) {
-  id = this.objectID(id);
+  id = MongoHandler.objectID(id);
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) return callback(error);
     else {      
       collection.findOne({ _id: id }, function(error, doc){
         if (error) return callback(error);
         else {
-          console.log('doc:', doc);
+          // console.log('doc:', doc);
           callback(null, doc);
         }
       });
@@ -111,25 +111,30 @@ MongoHandler.prototype.getById = function(collectionName, id, callback) {
 
 
 // get a random doc in a collection
-MongoHandler.prototype.getRandom = function(collectionName, callback) {
+// filter by 'query' (pass {} for all)
+// pass back the count along with a random doc
+MongoHandler.prototype.getRandom = function(collectionName, query, callback) {
+  // console.log("getRandom with query: ", query);  
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) return callback(error);
     else {
-      collection.count(function(error, count) {
+      collection.count(query, function(error, count) {
+        // console.log("count result: ", count);
+        
         if (error) return callback(error);
         
         // skip a random number of records
         var skip = Math.floor( Math.random() * count );
 
         // impt: can't use findOne() w/ skip for some reason.
-        collection.find({}, { limit: 1, skip: skip }, function(error, cursor){
+        collection.find(query, { limit: 1, skip: skip }, function(error, cursor){
           if (error) return callback(error);
           
           cursor.nextObject( function(error, doc){
             if (error) return callback(error);
             else {
-              console.log('doc:', doc);            
-              callback(null, doc);
+              // console.log('doc:', doc);            
+              callback(null, doc, count);
             }
           });
         });
@@ -140,7 +145,7 @@ MongoHandler.prototype.getRandom = function(collectionName, callback) {
 
 
 MongoHandler.prototype.remove = function(collectionName, id, callback) {
-  id = this.objectID(id);
+  id = MongoHandler.objectID(id);
   var collection = this.getCollection(collectionName, function(error, collection) {
     if (error) return callback(error);
     else {
@@ -153,8 +158,8 @@ MongoHandler.prototype.remove = function(collectionName, id, callback) {
 };
 
 
-// convert an ID string to an ObjectID
-MongoHandler.prototype.objectID = function(id) {
+// convert an ID string to an ObjectID [STATIC]
+MongoHandler.objectID = function(id) {
   try {
     return BSON.ObjectID(id);
   }

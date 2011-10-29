@@ -6,10 +6,13 @@ ul#nav
     a(href='/play') Play
   li
     a(href='/word/add') Add
-  li.last
-    a(href='/lookup') Lookup
 
-- if (isLoggedIn)
-  a.logout(href="/logout") Logout
-- else
-  a.login(href="/login") Login
+  li
+    a(href='/lookup', title='WordReference API') Lookup
+
+  - if (isLoggedIn)
+    li.logout.last
+      a.logout(href="/logout") Logout
+  - else
+    li.login.last
+      a.login(href="/login") Login

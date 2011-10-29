@@ -27,11 +27,11 @@ form#lookup-word(method='post', action='/lookup')
             span.term
               a(href=definition.addWordUrl)!=definition.term
             span.label Type
-            span.type!=definition.POS
+            span.type!= getWordType(definition.type)
             span.label Sense
-            span.sense!=definition.sense
+            span.sense!= definition.sense
             span.label Usage
-            span.usage!=definition.usage
+            span.usage!= definition.usage
 
 
 - if (typeof compounds != 'undefined' && compounds)
@@ -43,18 +43,18 @@ form#lookup-word(method='post', action='/lookup')
       - each compound in compounds
         li
           span.label Term
-          span.term!=compound.OriginalTerm.term
+          span.term!= compound.OriginalTerm.term
           span.label Type
-          span.type!=compound.OriginalTerm.POS
+          span.type!= getWordType(compound.type)
           span.label Sense
-          span.sense!=compound.OriginalTerm.sense
+          span.sense!= compound.OriginalTerm.sense
           span.label Usage
-          span.usage!=compound.OriginalTerm.usage
+          span.usage!= compound.OriginalTerm.usage
       
           span.label Translation
-          span.trans!=compound.FirstTranslation.term
+          span.trans!= compound.FirstTranslation.term
           span.label Sense
-          span.sense!=compound.FirstTranslation.sense
+          span.sense!= compound.FirstTranslation.sense
 
     
 - if (typeof result != 'undefined' && result)

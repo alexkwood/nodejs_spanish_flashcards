@@ -69,16 +69,6 @@ Word.prototype.save = function(db, callback) {
 };
 
 
-// get the friendly type of this word
-Word.prototype.getWordType = function() {
-  var types = exports.getWordTypes();     // in same file, does that work?
-  if (!_.isEmpty(this.type) && !_.isUndefined(types[this.type])) {
-    return types[this.type];
-  }
-  return this.type;
-};
-
-
 // @todo 'update' separate from 'save'?
 
 // Word.prototype.XXX = function() {
@@ -148,6 +138,19 @@ exports.getWordTypes = function() {
     'phrase' : 'phrase'
   };
 };
+
+// [static] given a word type CODE, return the NAME, or the same if not found.
+exports.getWordType = function(type) {
+  var types = exports.getWordTypes();     // in same file, does that work?
+  try {
+    if (!_.isUndefined(type) && !_.isUndefined(types[type])) {
+      return types[type];
+    }
+  } catch(e) {}
+  
+  return type;
+};
+
 
 // get the existing 'group' values
 exports.getGroups = function(db, callback) {

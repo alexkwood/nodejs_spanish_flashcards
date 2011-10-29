@@ -49,7 +49,13 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 
-// middleware
+// default/global view vars [can define functions that accept params from templates]
+app.set('view options', {
+  getWordType: require('./models/word').getWordType
+});
+
+
+// middleware [use as simple variables, _can't_ pass params into them from templates]
 app.dynamicHelpers({
   appTitle: function(req,res) { return global.appTitle; }
 
@@ -71,6 +77,7 @@ app.dynamicHelpers({
   , isLoggedIn: function(req, res) {
     return app.isLoggedIn(req);
   }
+  
 });
 
 // Configuration

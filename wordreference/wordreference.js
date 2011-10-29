@@ -102,13 +102,22 @@ WR.prototype.parse = function(result) {
     raw: ''
   },
   termCount,
-  pointer;
+  term,
+  definition;
   
   // out.raw = 'Result: ' + '<br/>' + '<pre>' + util.inspect(result, true, null) + '</pre>' + '<br/><br/>';
 
   try {
     if (! _.isUndefined(result.original.Compounds)) {
       out.compounds = _.toArray(result.original.Compounds);
+      
+      // get consistent word types
+      _(out.compounds).each(function(compound) {
+        if (!_.isUndefined(compound.OriginalTerm))
+          if (!_.isUndefined(compound.OriginalTerm.POS))
+            compound.type = WR.convertWordType(compound.OriginalTerm.POS);            
+      });
+      
     }
   } catch(e) {}
   
@@ -117,16 +126,22 @@ WR.prototype.parse = function(result) {
       if (! _.isUndefined(result['term' + termCount])) {
         // out.raw += "Found term " + termCount + "<br/>";
 
-        pointer = result['term' + termCount];
+        term = result['term' + termCount];
         
         _(['PrincipalTranslations', 'AdditionalTranslations']).each(function(t1) {
 
-          if (! _.isUndefined( pointer[t1] )) {
-            _.each(pointer[t1], function(t) {    // 0,1,etc
+          if (! _.isUndefined( term[t1] )) {
+            _.each(term[t1], function(t) {    // 0,1,etc
 
               _(['FirstTranslation', 'SecondTranslation', 'ThirdTranslation']).each(function(t2) {
                 if (!_.isUndefined( t[t2] )) {
-                  out.definitions.push( t[t2] );
+                  
+                  definition = t[t2];
+                  
+                  // get consistent word types
+                  definition.type = WR.convertWordType(definition.POS);
+                  
+                  out.definitions.push( definition );
                 }
               });
 
@@ -144,4 +159,24 @@ WR.prototype.parse = function(result) {
   // out.raw += 'Translations: ' + '<pre>' + util.inspect(out.definitions, true, null) + '</pre><br/><br/>';
   
   return out;
+};
+
+
+
+// [static function]
+// for a given WR word type (code),
+// return the code consistent with the rest of this app. [or same if unknown]
+// @see WordHandler.getWordTypes()
+WR.convertWordType = function(wrType) {
+  if (_.isUndefined(wrType)) return;
+  
+  switch(wrType) {
+    case 'nf': case 'nm':
+      return 'n';
+    
+    case 'vtr': case 'vi':
+      return 'v';
+  }
+  
+  return wrType;
 };

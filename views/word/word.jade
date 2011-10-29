@@ -10,7 +10,7 @@ div.english
 
 div.type
   span.label type
-  span!= word.getWordType()
+  span!= getWordType(word.type)
   
 div.group
   - if (word.group != '' && word.group != null)

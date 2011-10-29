@@ -29,6 +29,10 @@ module.exports = function(app){
         return callback(error);
       }
 
+      groups = _.filter(groups, function(value){    // strip empties
+        return ! _.isEmpty(value);
+      });
+      
       groups = _.map(groups, function(value) {
         map = { key: value, value: value, selected: false };
         if (!_.isUndefined(currentWord.group)) {

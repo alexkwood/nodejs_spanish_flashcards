@@ -70,8 +70,8 @@ Word.prototype.save = function(db, callback) {
 
 
 // get the friendly type of this word
-Word.prototype.getType = function() {
-  var types = exports.getTypes();     // in same file, does that work?
+Word.prototype.getWordType = function() {
+  var types = exports.getWordTypes();     // in same file, does that work?
   if (!_.isEmpty(this.type) && !_.isUndefined(types[this.type])) {
     return types[this.type];
   }
@@ -137,8 +137,8 @@ exports.remove = function(db, id, callback) {
 
 
 // word types, i.e. parts of speech
-// used by getType() on word object.
-exports.getTypes = function() {
+// used by getWordType() on word object.
+exports.getWordTypes = function() {
   return {
     'n': 'noun',
     'v': 'verb',

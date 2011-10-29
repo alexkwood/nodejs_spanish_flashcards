@@ -112,7 +112,7 @@ module.exports = function(app){
           action: '/word',
 
           // for dropdown
-          types: _.map(WordHandler.getTypes(), function(value, key) {
+          types: _.map(WordHandler.getWordTypes(), function(value, key) {
             return { key: key, value: value, selected: false };
           }),
           
@@ -139,7 +139,7 @@ module.exports = function(app){
           pageTitle: 'Edit Word',
       
           // for dropdown
-          types: _.map(WordHandler.getTypes(), function(value, key) {
+          types: _.map(WordHandler.getWordTypes(), function(value, key) {
             return { 
               key: key,
               value: value,
